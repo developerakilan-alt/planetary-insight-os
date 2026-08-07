@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ExplorerRouteImport } from './routes/explorer'
+import { Route as ExplorerIndexRouteImport } from './routes/explorer.index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +23,38 @@ const ExplorerRoute = ExplorerRouteImport.update({
   path: '/explorer',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExplorerIndexRoute = ExplorerIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ExplorerRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/explorer': typeof ExplorerRoute
+  '/explorer': typeof ExplorerRouteWithChildren
+  '/explorer/': typeof ExplorerIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/explorer': typeof ExplorerRoute
+  '/explorer': typeof ExplorerIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/explorer': typeof ExplorerRoute
+  '/explorer': typeof ExplorerRouteWithChildren
+  '/explorer/': typeof ExplorerIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/explorer'
+  fullPaths: '/' | '/explorer' | '/explorer/'
   fileRoutesByTo: FileRoutesByTo
   to: '/' | '/explorer'
-  id: '__root__' | '/' | '/explorer'
+  id: '__root__' | '/' | '/explorer' | '/explorer/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ExplorerRoute: typeof ExplorerRoute
+  ExplorerRoute: typeof ExplorerRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +73,31 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExplorerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/explorer/': {
+      id: '/explorer/'
+      path: '/'
+      fullPath: '/explorer/'
+      preLoaderRoute: typeof ExplorerIndexRouteImport
+      parentRoute: typeof ExplorerRoute
+    }
   }
 }
 
+interface ExplorerRouteChildren {
+  ExplorerIndexRoute: typeof ExplorerIndexRoute
+}
+
+const ExplorerRouteChildren: ExplorerRouteChildren = {
+  ExplorerIndexRoute: ExplorerIndexRoute,
+}
+
+const ExplorerRouteWithChildren = ExplorerRoute._addFileChildren(
+  ExplorerRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ExplorerRoute: ExplorerRoute,
+  ExplorerRoute: ExplorerRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
