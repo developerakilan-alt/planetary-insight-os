@@ -24,7 +24,7 @@ export function Starfield({ count = 2600, radius = 90 }: { count?: number; radiu
       positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
       positions[i * 3 + 1] = r * Math.cos(phi);
       positions[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
-      const c = tints[Math.floor(Math.random() * tints.length)];
+      const c = tints[Math.floor(Math.random() * tints.length)] ?? tints[0]!;
       const b = 0.35 + Math.random() * 0.65;
       colors[i * 3] = c.r * b;
       colors[i * 3 + 1] = c.g * b;
