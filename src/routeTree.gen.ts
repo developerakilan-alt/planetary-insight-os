@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ExplorerRouteImport } from './routes/explorer'
+import { Route as MissionsRouteImport } from './routes/missions'
+import { Route as ResearchRouteImport } from './routes/research'
 import { Route as ExplorerIndexRouteImport } from './routes/explorer.index'
 import { Route as ExplorerBodyRouteImport } from './routes/explorer.$body'
 
@@ -22,6 +24,16 @@ const IndexRoute = IndexRouteImport.update({
 const ExplorerRoute = ExplorerRouteImport.update({
   id: '/explorer',
   path: '/explorer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MissionsRoute = MissionsRouteImport.update({
+  id: '/missions',
+  path: '/missions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResearchRoute = ResearchRouteImport.update({
+  id: '/research',
+  path: '/research',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExplorerIndexRoute = ExplorerIndexRouteImport.update({
@@ -38,11 +50,15 @@ const ExplorerBodyRoute = ExplorerBodyRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/explorer': typeof ExplorerRouteWithChildren
+  '/missions': typeof MissionsRoute
+  '/research': typeof ResearchRoute
   '/explorer/$body': typeof ExplorerBodyRoute
   '/explorer/': typeof ExplorerIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/missions': typeof MissionsRoute
+  '/research': typeof ResearchRoute
   '/explorer/$body': typeof ExplorerBodyRoute
   '/explorer': typeof ExplorerIndexRoute
 }
@@ -50,20 +66,37 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/explorer': typeof ExplorerRouteWithChildren
+  '/missions': typeof MissionsRoute
+  '/research': typeof ResearchRoute
   '/explorer/$body': typeof ExplorerBodyRoute
   '/explorer/': typeof ExplorerIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/explorer' | '/explorer/$body' | '/explorer/'
+  fullPaths:
+    | '/'
+    | '/explorer'
+    | '/missions'
+    | '/research'
+    | '/explorer/$body'
+    | '/explorer/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/explorer/$body' | '/explorer'
-  id: '__root__' | '/' | '/explorer' | '/explorer/$body' | '/explorer/'
+  to: '/' | '/missions' | '/research' | '/explorer/$body' | '/explorer'
+  id:
+    | '__root__'
+    | '/'
+    | '/explorer'
+    | '/missions'
+    | '/research'
+    | '/explorer/$body'
+    | '/explorer/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ExplorerRoute: typeof ExplorerRouteWithChildren
+  MissionsRoute: typeof MissionsRoute
+  ResearchRoute: typeof ResearchRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -80,6 +113,20 @@ declare module '@tanstack/react-router' {
       path: '/explorer'
       fullPath: '/explorer'
       preLoaderRoute: typeof ExplorerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/missions': {
+      id: '/missions'
+      path: '/missions'
+      fullPath: '/missions'
+      preLoaderRoute: typeof MissionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/research': {
+      id: '/research'
+      path: '/research'
+      fullPath: '/research'
+      preLoaderRoute: typeof ResearchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/explorer/': {
@@ -116,6 +163,8 @@ const ExplorerRouteWithChildren = ExplorerRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ExplorerRoute: ExplorerRouteWithChildren,
+  MissionsRoute: MissionsRoute,
+  ResearchRoute: ResearchRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
