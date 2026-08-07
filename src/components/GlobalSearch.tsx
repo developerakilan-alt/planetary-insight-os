@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Search } from "lucide-react";
 import {
@@ -85,9 +85,4 @@ export function SearchTrigger({ onClick }: { onClick: () => void }) {
       <kbd className="label-tele rounded border border-border px-1.5 py-0.5 text-[10px]">⌘K</kbd>
     </button>
   );
-}
-
-export function useSearchHotkey(setOpen: (fn: (v: boolean) => boolean) => void) {
-  const [state] = useState(null);
-  return state;
 }
