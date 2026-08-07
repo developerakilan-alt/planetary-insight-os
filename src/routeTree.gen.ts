@@ -10,7 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AboutRouteImport } from './routes/about'
+import { Route as CopilotRouteImport } from './routes/copilot'
 import { Route as ExplorerRouteImport } from './routes/explorer'
+import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as MissionsRouteImport } from './routes/missions'
 import { Route as ResearchRouteImport } from './routes/research'
 import { Route as ExplorerIndexRouteImport } from './routes/explorer.index'
@@ -21,9 +24,24 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CopilotRoute = CopilotRouteImport.update({
+  id: '/copilot',
+  path: '/copilot',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ExplorerRoute = ExplorerRouteImport.update({
   id: '/explorer',
   path: '/explorer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GalleryRoute = GalleryRouteImport.update({
+  id: '/gallery',
+  path: '/gallery',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MissionsRoute = MissionsRouteImport.update({
@@ -49,7 +67,10 @@ const ExplorerBodyRoute = ExplorerBodyRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/copilot': typeof CopilotRoute
   '/explorer': typeof ExplorerRouteWithChildren
+  '/gallery': typeof GalleryRoute
   '/missions': typeof MissionsRoute
   '/research': typeof ResearchRoute
   '/explorer/$body': typeof ExplorerBodyRoute
@@ -57,6 +78,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/copilot': typeof CopilotRoute
+  '/gallery': typeof GalleryRoute
   '/missions': typeof MissionsRoute
   '/research': typeof ResearchRoute
   '/explorer/$body': typeof ExplorerBodyRoute
@@ -65,7 +89,10 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/copilot': typeof CopilotRoute
   '/explorer': typeof ExplorerRouteWithChildren
+  '/gallery': typeof GalleryRoute
   '/missions': typeof MissionsRoute
   '/research': typeof ResearchRoute
   '/explorer/$body': typeof ExplorerBodyRoute
@@ -75,17 +102,31 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/about'
+    | '/copilot'
     | '/explorer'
+    | '/gallery'
     | '/missions'
     | '/research'
     | '/explorer/$body'
     | '/explorer/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/missions' | '/research' | '/explorer/$body' | '/explorer'
+  to:
+    | '/'
+    | '/about'
+    | '/copilot'
+    | '/gallery'
+    | '/missions'
+    | '/research'
+    | '/explorer/$body'
+    | '/explorer'
   id:
     | '__root__'
     | '/'
+    | '/about'
+    | '/copilot'
     | '/explorer'
+    | '/gallery'
     | '/missions'
     | '/research'
     | '/explorer/$body'
@@ -94,7 +135,10 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
+  CopilotRoute: typeof CopilotRoute
   ExplorerRoute: typeof ExplorerRouteWithChildren
+  GalleryRoute: typeof GalleryRoute
   MissionsRoute: typeof MissionsRoute
   ResearchRoute: typeof ResearchRoute
 }
@@ -108,11 +152,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/copilot': {
+      id: '/copilot'
+      path: '/copilot'
+      fullPath: '/copilot'
+      preLoaderRoute: typeof CopilotRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/explorer': {
       id: '/explorer'
       path: '/explorer'
       fullPath: '/explorer'
       preLoaderRoute: typeof ExplorerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gallery': {
+      id: '/gallery'
+      path: '/gallery'
+      fullPath: '/gallery'
+      preLoaderRoute: typeof GalleryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/missions': {
@@ -162,7 +227,10 @@ const ExplorerRouteWithChildren = ExplorerRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
+  CopilotRoute: CopilotRoute,
   ExplorerRoute: ExplorerRouteWithChildren,
+  GalleryRoute: GalleryRoute,
   MissionsRoute: MissionsRoute,
   ResearchRoute: ResearchRoute,
 }
