@@ -28,17 +28,15 @@ function Marker({
   position,
   label,
   tone = "primary",
-  onClick,
 }: {
   position: THREE.Vector3;
   label?: string;
   tone?: "primary" | "warning";
-  onClick?: () => void;
 }) {
   const color = tone === "warning" ? "#F5C542" : "#4FD1FF";
   return (
     <group position={position}>
-      <mesh onClick={onClick}>
+      <mesh>
         <sphereGeometry args={[0.018, 12, 12]} />
         <meshBasicMaterial color={color} />
       </mesh>
@@ -55,17 +53,6 @@ function Marker({
       )}
     </group>
   );
-}
-
-function FocusRig({ target }: { target: { lat: number; lon: number } | null }) {
-  const controls = useRef<any>(null);
-  useFrame(({ camera }, dt) => {
-    if (!target) return;
-    const dir = latLonToVec3(target.lat, target.lon, 2.9);
-    camera.position.lerp(dir, Math.min(dt, 0.05) * 1.6);
-    camera.lookAt(0, 0, 0);
-  });
-  return <primitive ref={controls} object={{}} visible={false} />;
 }
 
 export default function GlobeScene({
