@@ -4,7 +4,7 @@ import { lazy, useMemo, useState } from "react";
 import { z } from "zod";
 import { ArrowLeft, Crosshair, MapPin, Sun, Sparkles } from "lucide-react";
 import { ClientOnly } from "@/components/ClientOnly";
-import { BODIES, getBody } from "@/data/bodies";
+import { BODIES, getBody, type Landmark } from "@/data/bodies";
 import { MISSIONS } from "@/data/missions";
 import { analyseSite } from "@/lib/analysis";
 
@@ -293,7 +293,7 @@ function PlanetDashboard() {
           <div className="panel p-6">
             <div className="label-tele mb-4">Named surface features</div>
             <div className="space-y-2">
-              {body.landmarks.map((l) => (
+              {body.landmarks.map((l: Landmark) => (
                 <button
                   key={l.name}
                   onClick={() =>
