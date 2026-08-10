@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ChatPanel } from "@/components/AICopilot";
+import { PageMasthead } from "@/components/PageMasthead";
 
 export const Route = createFileRoute("/copilot")({
   head: () => ({
@@ -25,12 +26,17 @@ export const Route = createFileRoute("/copilot")({
 function Copilot() {
   return (
     <div className="mx-auto max-w-[1100px] px-6 pb-24 pt-10">
-      <div className="label-tele">Analysis engine</div>
-      <h1 className="mt-3 text-[clamp(1.75rem,3.4vw,2.85rem)] font-semibold">AI Scientist</h1>
-      <p className="mt-4 max-w-2xl text-muted-foreground">
-        A planetary science analyst trained on mission literature. Ask about geology, atmospheres,
-        habitability or exploration architecture.
-      </p>
+      <PageMasthead
+        eyebrow="Analysis engine"
+        title="AI Scientist"
+        description="A planetary science analyst trained on mission literature. Ask about geology, atmospheres, habitability or exploration architecture."
+        meta={[
+          { label: "Corpus", value: "Mission literature" },
+          { label: "Scope", value: "14 bodies" },
+          { label: "Status", value: "Online" },
+          { label: "History", value: "Session" },
+        ]}
+      />
       <div className="panel mt-8 h-[70vh] min-h-[560px] overflow-hidden">
         <ChatPanel />
       </div>

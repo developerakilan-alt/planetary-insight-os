@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { Globe2, Route as RouteIcon } from "lucide-react";
 import { MISSIONS, type Mission } from "@/data/missions";
+import { PageMasthead } from "@/components/PageMasthead";
 import { z } from "zod";
 
 const searchSchema = z.object({ mission: z.string().optional() });
@@ -49,14 +50,20 @@ function Missions() {
 
   return (
     <div className="mx-auto max-w-[1600px] px-6 pb-24 pt-10">
-      <div className="label-tele">Mission archive</div>
-      <h1 className="mt-3 text-[clamp(1.75rem,3.4vw,2.85rem)] font-semibold">
-        Six decades of planetary operations
-      </h1>
-      <p className="mt-4 max-w-2xl text-muted-foreground">
-        Select a mission to inspect its target, landing coordinates, surface traverse and the
-        science it returned.
-      </p>
+      <PageMasthead
+        eyebrow="Mission archive"
+        title="Six decades of planetary operations"
+        description="Select a mission to inspect its target, landing coordinates, surface traverse and the science it returned."
+        meta={[
+          { label: "Missions", value: String(MISSIONS.length) },
+          { label: "Period", value: "1958 — present" },
+          { label: "Sources", value: "NASA · JPL · ESA" },
+          {
+            label: "Active",
+            value: String(MISSIONS.filter((m) => m.status === "active").length),
+          },
+        ]}
+      />
 
       <div className="mt-12 overflow-x-auto pb-4">
         <div className="relative flex min-w-[900px] items-end gap-2">

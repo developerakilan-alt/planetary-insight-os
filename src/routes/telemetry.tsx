@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Activity, Antenna, ArrowDownRight, ArrowUpRight, Orbit, Radio, Users } from "lucide-react";
 import { BODIES, type BodyId } from "@/data/bodies";
+import { PageMasthead } from "@/components/PageMasthead";
 import {
   dsnTargetName,
   fetchCrew,
@@ -200,17 +201,18 @@ function Telemetry() {
 
   return (
     <div className="mx-auto max-w-[1600px] px-6 pb-24 pt-10">
-      <div className="label-tele flex items-center gap-2">
-        <Activity className="h-3.5 w-3.5 text-primary" /> Live telemetry
-      </div>
-      <h1 className="mt-3 text-[clamp(1.75rem,3.4vw,2.85rem)] font-semibold">
-        Flight operations console
-      </h1>
-      <p className="mt-4 max-w-2xl text-muted-foreground">
-        Live mission tracking from public feeds: the International Space Station (wheretheiss.at),
-        Deep Space Network antenna links (DSN Now), the Perseverance surface downlink (NASA/JPL) and
-        Earth-relative distances to every planet, computed live with astronomy-engine.
-      </p>
+      <PageMasthead
+        eyebrow="Live telemetry"
+        icon={<Activity className="h-3.5 w-3.5" />}
+        title="Flight operations console"
+        description="Live mission tracking from public feeds: the International Space Station (wheretheiss.at), Deep Space Network antenna links (DSN Now), the Perseverance surface downlink (NASA/JPL) and Earth-relative distances to every planet, computed live with astronomy-engine."
+        meta={[
+          { label: "Feeds", value: "DSN Now · ISS · JPL" },
+          { label: "Refresh", value: "30 s" },
+          { label: "Ephemeris", value: "astronomy-engine" },
+          { label: "Status", value: issError ? "Signal lost" : "Nominal" },
+        ]}
+      />
 
       <div className="mt-8 grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <div className="panel p-6">

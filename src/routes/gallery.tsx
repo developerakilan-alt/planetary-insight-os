@@ -8,6 +8,7 @@ import { BODIES } from "@/data/bodies";
 import { MISSIONS } from "@/data/missions";
 import { describeImage } from "@/lib/ai.functions";
 import { searchNasaImages, type NasaCatalogItem } from "@/lib/nasa";
+import { PageMasthead } from "@/components/PageMasthead";
 
 export const Route = createFileRoute("/gallery")({
   head: () => ({
@@ -189,17 +190,18 @@ function Gallery() {
 
   return (
     <div className="mx-auto max-w-[1600px] px-6 pb-24 pt-10">
-      <div className="label-tele flex items-center gap-2">
-        <Satellite className="h-3.5 w-3.5 text-primary" /> Imaging library
-      </div>
-      <h1 className="mt-3 text-[clamp(1.75rem,3.4vw,2.85rem)] font-semibold">
-        Surface observation archive
-      </h1>
-      <p className="mt-4 max-w-2xl text-muted-foreground">
-        Live imagery pulled from the NASA Image and Video Library. Filter by body, mission,
-        spacecraft or year, and hover any image to ask the AI imaging analyst for a scientific
-        caption.
-      </p>
+      <PageMasthead
+        eyebrow="Imaging library"
+        icon={<Satellite className="h-3.5 w-3.5" />}
+        title="Surface observation archive"
+        description="Live imagery pulled from the NASA Image and Video Library. Filter by body, mission, spacecraft or year, and hover any image to ask the AI imaging analyst for a scientific caption."
+        meta={[
+          { label: "Source", value: "NASA image library" },
+          { label: "Entries", value: String(entries.length) },
+          { label: "Updated", value: "Live · API feed" },
+          { label: "Format", value: "JPEG · Web" },
+        ]}
+      />
 
       <div className="mt-8 grid gap-3 lg:grid-cols-4">
         <Filter

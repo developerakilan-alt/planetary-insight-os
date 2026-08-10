@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageMasthead } from "@/components/PageMasthead";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
@@ -43,16 +44,19 @@ const SECTIONS = [
 function About() {
   return (
     <div className="mx-auto max-w-[1100px] px-6 pb-24 pt-10">
-      <div className="label-tele">Platform</div>
-      <h1 className="mt-3 text-[clamp(1.75rem,3.4vw,2.85rem)] font-semibold">
-        Built like mission software
-      </h1>
-      <p className="mt-4 max-w-2xl text-muted-foreground">
-        Cosmos OS is a research console, not a website. It is designed for planetary scientists,
-        mission planners and students who need to reason about worlds quickly.
-      </p>
+      <PageMasthead
+        eyebrow="Platform"
+        title="Built like mission software"
+        description="Cosmos OS is a research console, not a website. It is designed for planetary scientists, mission planners and students who need to reason about worlds quickly."
+        meta={[
+          { label: "Build", value: "4.2.1" },
+          { label: "Status", value: "Research preview" },
+          { label: "Rendering", value: "GPU procedural" },
+          { label: "Stack", value: "TanStack · Three.js" },
+        ]}
+      />
 
-      <div className="mt-12 grid gap-4 md:grid-cols-2">
+      <div className="mt-10 grid gap-4 md:grid-cols-2">
         {SECTIONS.map((s) => (
           <section key={s.title} className="panel p-8">
             <h2 className="text-lg font-medium">{s.title}</h2>

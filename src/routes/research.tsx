@@ -18,6 +18,7 @@ import { FileDown, Printer } from "lucide-react";
 import { BODIES, type BodyId } from "@/data/bodies";
 import { SonifyToggle } from "@/components/SonifyToggle";
 import { buildComparisonMarkdown, downloadTextFile } from "@/lib/report";
+import { PageMasthead } from "@/components/PageMasthead";
 
 export const Route = createFileRoute("/research")({
   head: () => ({
@@ -113,13 +114,17 @@ function Research() {
 
   return (
     <div className="print-report mx-auto max-w-[1600px] px-6 pb-24 pt-10">
-      <div className="label-tele">Research console</div>
-      <h1 className="mt-3 text-[clamp(1.75rem,3.4vw,2.85rem)] font-semibold">
-        Comparative planetology
-      </h1>
-      <p className="mt-4 max-w-2xl text-muted-foreground">
-        Select up to five bodies to compare physical, thermal and atmospheric parameters.
-      </p>
+      <PageMasthead
+        eyebrow="Research console"
+        title="Comparative planetology"
+        description="Select up to five bodies to compare physical, thermal and atmospheric parameters."
+        meta={[
+          { label: "Catalogue", value: "14 bodies" },
+          { label: "Datasets", value: "Published literature" },
+          { label: "Export", value: "PDF · CSV" },
+          { label: "Mode", value: "Comparative" },
+        ]}
+      />
 
       <div className="mt-8 flex flex-wrap gap-2">
         {BODIES.map((b) => (
