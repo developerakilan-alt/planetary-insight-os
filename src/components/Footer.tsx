@@ -7,8 +7,8 @@ export function Footer() {
         <div className="md:col-span-2">
           <div className="font-display text-sm font-semibold tracking-[0.2em]">COSMOS OS</div>
           <p className="mt-3 max-w-sm text-sm text-muted-foreground">
-            An AI-assisted planetary intelligence platform for mission planning, terrain analysis and
-            comparative planetology.
+            An AI-assisted planetary intelligence platform for mission planning, terrain analysis
+            and comparative planetology.
           </p>
           <div className="label-tele mt-6 flex items-center gap-2">
             <span className="h-1.5 w-1.5 animate-pulse-ring rounded-full bg-secondary" />

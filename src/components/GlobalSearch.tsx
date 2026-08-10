@@ -8,11 +8,41 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  CommandSeparator,
 } from "@/components/ui/command";
 import { BODIES } from "@/data/bodies";
 import { MISSIONS } from "@/data/missions";
 
-export function GlobalSearch({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+const ACTIONS = [
+  { label: "Launch Explorer", hint: "Open the 3D solar system", to: "/explorer" },
+  { label: "Research Console", hint: "Compare planetary datasets", to: "/research" },
+  { label: "Mission Archive", hint: "Apollo through Europa Clipper", to: "/missions" },
+  { label: "Telemetry", hint: "Live system metrics", to: "/telemetry" },
+  { label: "AI Copilot", hint: "Ask the AI Scientist", to: "/copilot" },
+  { label: "Gallery", hint: "NASA imagery catalogue", to: "/gallery" },
+] as const;
+
+/** Tiny procedural planet thumbnail built from the body's shader palette. */
+function PlanetThumb({ body }: { body: (typeof BODIES)[number] }) {
+  return (
+    <span
+      className="h-5 w-5 shrink-0 rounded-full"
+      style={{
+        background: `radial-gradient(circle at 32% 30%, ${body.palette.high}, ${body.palette.mid} 52%, ${body.palette.low} 100%)`,
+        boxShadow: `0 0 10px -2px ${body.palette.mid}`,
+      }}
+      aria-hidden
+    />
+  );
+}
+
+export function GlobalSearch({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+}) {
   const navigate = useNavigate();
 
   const features = useMemo(
@@ -32,9 +62,14 @@ export function GlobalSearch({ open, onOpenChange }: { open: boolean; onOpenChan
     navigate({ to, search: search as never });
   };
 
+  const goMission = (id: string) => {
+    onOpenChange(false);
+    navigate({ to: "/missions", search: { mission: id } });
+  };
+
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
-      <CommandInput placeholder="Search surface features, bodies, missions…" />
+      <CommandInput placeholder="Search features, bodies, missions, pages…" />
       <CommandList>
         <CommandEmpty>No records in the catalogue.</CommandEmpty>
         <CommandGroup heading="Surface features">
@@ -43,9 +78,13 @@ export function GlobalSearch({ open, onOpenChange }: { open: boolean; onOpenChan
               key={f.key}
               value={`${f.landmark.name} ${f.body.name} ${f.landmark.note}`}
               onSelect={() =>
-                go(`/explorer/${f.body.id}`, { lat: String(f.landmark.lat), lon: String(f.landmark.lon) })
+                go(`/explorer/${f.body.id}`, {
+                  lat: String(f.landmark.lat),
+                  lon: String(f.landmark.lon),
+                })
               }
             >
+              <PlanetThumb body={f.body} />
               <span className="font-medium">{f.landmark.name}</span>
               <span className="ml-2 text-xs text-muted-foreground">
                 {f.body.name} · {f.landmark.note}
@@ -55,17 +94,42 @@ export function GlobalSearch({ open, onOpenChange }: { open: boolean; onOpenChan
         </CommandGroup>
         <CommandGroup heading="Bodies">
           {BODIES.map((b) => (
-            <CommandItem key={b.id} value={`${b.name} ${b.designation}`} onSelect={() => go(`/explorer/${b.id}`)}>
+            <CommandItem
+              key={b.id}
+              value={`${b.name} ${b.designation} ${b.classification}`}
+              onSelect={() => go(`/explorer/${b.id}`)}
+            >
+              <PlanetThumb body={b} />
               <span className="font-medium">{b.name}</span>
-              <span className="ml-2 text-xs text-muted-foreground">{b.designation}</span>
+              <span className="ml-2 text-xs text-muted-foreground">
+                {b.designation} · {b.classification}
+              </span>
             </CommandItem>
           ))}
         </CommandGroup>
         <CommandGroup heading="Missions">
           {MISSIONS.map((m) => (
-            <CommandItem key={m.id} value={`${m.name} ${m.agency}`} onSelect={() => go("/missions")}>
+            <CommandItem
+              key={m.id}
+              value={`${m.name} ${m.agency} ${m.status ?? ""}`}
+              onSelect={() => goMission(m.id)}
+            >
               <span className="font-medium">{m.name}</span>
               <span className="ml-2 text-xs text-muted-foreground">{m.agency}</span>
+            </CommandItem>
+          ))}
+        </CommandGroup>
+        <CommandSeparator />
+        <CommandGroup heading="Shortcuts">
+          {ACTIONS.map((a) => (
+            <CommandItem
+              key={a.label}
+              value={a.label}
+              onSelect={() => go(a.to)}
+              keywords={[a.hint]}
+            >
+              <span className="font-medium">{a.label}</span>
+              <span className="ml-2 text-xs text-muted-foreground">{a.hint}</span>
             </CommandItem>
           ))}
         </CommandGroup>

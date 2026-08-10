@@ -10,7 +10,10 @@ export const Route = createFileRoute("/about")({
           "How Cosmos OS is built: real-time procedural planetary rendering, published science datasets and an AI analysis layer.",
       },
       { property: "og:title", content: "About the Platform — Cosmos OS" },
-      { property: "og:description", content: "Architecture, data provenance and design principles behind Cosmos OS." },
+      {
+        property: "og:description",
+        content: "Architecture, data provenance and design principles behind Cosmos OS.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -41,10 +44,12 @@ function About() {
   return (
     <div className="mx-auto max-w-[1100px] px-6 pb-24 pt-10">
       <div className="label-tele">Platform</div>
-      <h1 className="mt-3 text-[clamp(2rem,4vw,3.25rem)] font-semibold">Built like mission software</h1>
+      <h1 className="mt-3 text-[clamp(2rem,4vw,3.25rem)] font-semibold">
+        Built like mission software
+      </h1>
       <p className="mt-4 max-w-2xl text-muted-foreground">
-        Cosmos OS is a research console, not a website. It is designed for planetary scientists, mission
-        planners and students who need to reason about worlds quickly.
+        Cosmos OS is a research console, not a website. It is designed for planetary scientists,
+        mission planners and students who need to reason about worlds quickly.
       </p>
 
       <div className="mt-12 grid gap-4 md:grid-cols-2">
@@ -71,7 +76,10 @@ function About() {
             "Recharts",
             "Lovable AI Gateway",
           ].map((t) => (
-            <span key={t} className="rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground">
+            <span
+              key={t}
+              className="rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground"
+            >
               {t}
             </span>
           ))}

@@ -2,12 +2,14 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { Github, Moon, Sun, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { GlobalSearch, SearchTrigger } from "@/components/GlobalSearch";
+import { AmbientAudio } from "@/components/AmbientAudio";
 
 const NAV = [
   { to: "/", label: "Home" },
   { to: "/explorer", label: "Explorer" },
   { to: "/research", label: "Research" },
   { to: "/missions", label: "Missions" },
+  { to: "/telemetry", label: "Telemetry" },
   { to: "/copilot", label: "AI Copilot" },
   { to: "/gallery", label: "Gallery" },
   { to: "/about", label: "About" },
@@ -60,7 +62,9 @@ export function Navbar() {
               <span className="absolute inset-0 rounded-lg bg-primary/10 blur-[6px] transition-all group-hover:bg-primary/25" />
               <span className="h-2.5 w-2.5 rounded-full bg-primary shadow-[0_0_12px_2px_color-mix(in_oklab,var(--primary)_60%,transparent)]" />
             </span>
-            <span className="font-display text-[15px] font-semibold tracking-[0.18em]">COSMOS OS</span>
+            <span className="font-display text-[15px] font-semibold tracking-[0.18em]">
+              COSMOS OS
+            </span>
           </Link>
 
           <nav className="hidden items-center gap-1 lg:flex">
@@ -90,6 +94,7 @@ export function Navbar() {
             >
               <Github className="h-4 w-4" />
             </a>
+            <AmbientAudio />
             <button
               onClick={() => setLight((v) => !v)}
               aria-label="Toggle laboratory light mode"
@@ -97,12 +102,15 @@ export function Navbar() {
             >
               {light ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
             </button>
-            <div className="hidden h-9 items-center gap-2 rounded-full border border-border pl-1 pr-3 sm:flex">
+            <Link
+              to="/ar"
+              className="hidden h-9 items-center gap-2 rounded-full border border-border pl-1 pr-3 transition-colors hover:border-primary/50 sm:flex"
+            >
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/15 text-[11px] font-semibold text-primary">
                 AR
               </span>
               <span className="label-tele text-[10px]">Flight Ops</span>
-            </div>
+            </Link>
             <button
               onClick={() => setMobile((v) => !v)}
               aria-label="Toggle navigation"

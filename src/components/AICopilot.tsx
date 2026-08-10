@@ -1,9 +1,10 @@
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bot, CornerDownLeft, Sparkles, X } from "lucide-react";
+import { CornerDownLeft, Sparkles, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { askScientist } from "@/lib/ai.functions";
+import { AiOrb } from "@/components/AiOrb";
 
 export interface ChatMessage {
   role: "user" | "assistant";
@@ -64,16 +65,15 @@ export function useScientist(context?: string) {
       ]),
   });
 
-  return { messages, ask: mutation.mutate, pending: mutation.isPending, reset: () => setMessages([]) };
+  return {
+    messages,
+    ask: mutation.mutate,
+    pending: mutation.isPending,
+    reset: () => setMessages([]),
+  };
 }
 
-export function ChatPanel({
-  context,
-  compact = false,
-}: {
-  context?: string;
-  compact?: boolean;
-}) {
+export function ChatPanel({ context, compact = false }: { context?: string; compact?: boolean }) {
   const { messages, ask, pending } = useScientist(context);
   const [value, setValue] = useState("");
   const endRef = useRef<HTMLDivElement>(null);
@@ -98,7 +98,8 @@ export function ChatPanel({
               <span className="label-tele text-primary">AI Scientist online</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              Ask about planetary geology, mission history, habitability or landing-site engineering.
+              Ask about planetary geology, mission history, habitability or landing-site
+              engineering.
             </p>
             <div className="grid gap-2">
               {SUGGESTIONS.map((s) => (
@@ -122,7 +123,10 @@ export function ChatPanel({
               </div>
             </div>
           ) : (
-            <div key={i} className="rounded-2xl rounded-bl-sm border border-border bg-card/50 px-4 py-3">
+            <div
+              key={i}
+              className="rounded-2xl rounded-bl-sm border border-border bg-card/50 px-4 py-3"
+            >
               <AnswerBody text={m.content} />
             </div>
           ),
@@ -130,7 +134,7 @@ export function ChatPanel({
 
         {pending && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span className="h-1.5 w-1.5 animate-pulse-ring rounded-full bg-primary" />
+            <AiOrb size={18} thinking />
             Synthesising from mission literature…
           </div>
         )}
@@ -181,9 +185,7 @@ export function AICopilot() {
           >
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
               <div className="flex items-center gap-2">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/15 text-primary">
-                  <Bot className="h-4 w-4" />
-                </span>
+                <AiOrb size={30} />
                 <div>
                   <div className="text-sm font-medium">AI Scientist</div>
                   <div className="label-tele text-[9px]">Planetary analysis engine</div>
@@ -208,9 +210,9 @@ export function AICopilot() {
         className="fixed bottom-6 right-6 z-50 flex h-14 items-center gap-3 rounded-full border border-border-strong bg-card/80 px-5 backdrop-blur-xl transition-transform hover:scale-[1.03]"
         style={{ boxShadow: "var(--shadow-glow)" }}
       >
-        <span className="relative flex h-6 w-6 items-center justify-center">
+        <span className="relative flex h-7 w-7 items-center justify-center">
           <span className="absolute inset-0 animate-pulse-ring rounded-full bg-primary/25" />
-          <Bot className="relative h-4 w-4 text-primary" />
+          <AiOrb size={26} />
         </span>
         <span className="hidden text-sm font-medium sm:block">AI Scientist</span>
       </button>

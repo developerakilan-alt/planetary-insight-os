@@ -4,6 +4,11 @@ import { lazy, useEffect, useRef, useState } from "react";
 import { ArrowRight, Play, Radar, Layers, Orbit, Gauge } from "lucide-react";
 import { ClientOnly } from "@/components/ClientOnly";
 import { Nebula } from "@/components/Nebula";
+import { HeroHud } from "@/components/HeroHud";
+import { TiltCard } from "@/components/motion/TiltCard";
+import { Magnetic } from "@/components/motion/Magnetic";
+import { CountUp } from "@/components/motion/CountUp";
+import { Reveal } from "@/components/motion/Reveal";
 import { bodyMap, type BodyId } from "@/data/bodies";
 
 const HeroScene = lazy(() => import("@/components/three/HeroScene"));
@@ -54,6 +59,7 @@ function Landing() {
       <div ref={ref} className="relative h-[500vh]">
         <div className="sticky top-0 h-screen overflow-hidden">
           <Nebula />
+          <HeroHud />
           <div className="absolute inset-0">
             <ClientOnly>
               <HeroScene bodyId={SEQUENCE[index] ?? "earth"} />
@@ -86,27 +92,33 @@ function Landing() {
                 AI Powered Planetary Intelligence Platform — The Future of Planetary Exploration.
               </p>
               <div className="pointer-events-auto mt-10 flex flex-wrap items-center justify-center gap-3">
-                <Link
-                  to="/explorer"
-                  className="group inline-flex h-12 items-center gap-2 rounded-full bg-primary px-6 text-sm font-medium text-primary-foreground transition-transform hover:scale-[1.03]"
-                  style={{ boxShadow: "var(--shadow-glow)" }}
-                >
-                  Launch Explorer
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                </Link>
-                <Link
-                  to="/missions"
-                  className="inline-flex h-12 items-center gap-2 rounded-full border border-border-strong bg-card/60 px-6 text-sm font-medium backdrop-blur-xl transition-colors hover:bg-card"
-                >
-                  <Play className="h-4 w-4" />
-                  Watch Mission
-                </Link>
-                <Link
-                  to="/research"
-                  className="inline-flex h-12 items-center gap-2 rounded-full border border-border px-6 text-sm font-medium text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground"
-                >
-                  Open Research Console
-                </Link>
+                <Magnetic strength={0.18}>
+                  <Link
+                    to="/explorer"
+                    className="group inline-flex h-12 items-center gap-2 rounded-full bg-primary px-6 text-sm font-medium text-primary-foreground transition-transform hover:scale-[1.03]"
+                    style={{ boxShadow: "var(--shadow-glow)" }}
+                  >
+                    Launch Explorer
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                  </Link>
+                </Magnetic>
+                <Magnetic strength={0.18}>
+                  <Link
+                    to="/missions"
+                    className="inline-flex h-12 items-center gap-2 rounded-full border border-border-strong bg-card/60 px-6 text-sm font-medium backdrop-blur-xl transition-colors hover:bg-card"
+                  >
+                    <Play className="h-4 w-4" />
+                    Watch Mission
+                  </Link>
+                </Magnetic>
+                <Magnetic strength={0.18}>
+                  <Link
+                    to="/research"
+                    className="inline-flex h-12 items-center gap-2 rounded-full border border-border px-6 text-sm font-medium text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground"
+                  >
+                    Open Research Console
+                  </Link>
+                </Magnetic>
               </div>
             </div>
           </motion.div>
@@ -121,7 +133,10 @@ function Landing() {
               </div>
               <Tele label="Radius" value={`${body.metrics.radiusKm.toLocaleString()} km`} />
               <Tele label="Gravity" value={`${body.metrics.gravity} m/s²`} />
-              <Tele label="Surface T" value={`${body.metrics.tempC[0]}…${body.metrics.tempC[1]} °C`} />
+              <Tele
+                label="Surface T"
+                value={`${body.metrics.tempC[0]}…${body.metrics.tempC[1]} °C`}
+              />
               <Tele label="Pressure" value={`${body.metrics.pressureBar} bar`} />
               <div className="ml-auto flex items-center gap-1.5">
                 {SEQUENCE.map((id, i) => (
@@ -163,7 +178,8 @@ const CAPABILITIES = [
     icon: Radar,
     title: "Landing Site Analyzer",
     body: "Click any surface coordinate to score terrain safety, slope, ice probability and radiation risk.",
-    to: "/explorer/mars",
+    to: "/explorer/$body",
+    params: { body: "mars" },
   },
   {
     icon: Layers,
@@ -189,45 +205,51 @@ function Capabilities() {
             One console for exploration, analysis and mission planning.
           </h2>
           <p className="mt-5 text-muted-foreground">
-            Cosmos OS unifies scientific visualisation, published planetary datasets and an AI analysis
-            engine into a single operating environment for research teams.
+            Cosmos OS unifies scientific visualisation, published planetary datasets and an AI
+            analysis engine into a single operating environment for research teams.
           </p>
         </div>
 
         <div className="mt-14 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {CAPABILITIES.map((c, i) => (
-            <motion.div
-              key={c.title}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-80px" }}
-              transition={{ delay: i * 0.07, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <Link to={c.to} className="panel lift block h-full p-6">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-primary/10 text-primary">
-                  <c.icon className="h-5 w-5" />
-                </span>
-                <h3 className="mt-5 text-lg font-medium">{c.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{c.body}</p>
-                <span className="mt-6 inline-flex items-center gap-1.5 text-sm text-primary">
-                  Open <ArrowRight className="h-3.5 w-3.5" />
-                </span>
-              </Link>
-            </motion.div>
+            <Reveal key={c.title} delay={i * 0.07} y={28}>
+              <TiltCard max={6}>
+                <Link
+                  to={c.to}
+                  {...("params" in c ? { params: c.params } : {})}
+                  className="panel lift block h-full p-6"
+                >
+                  <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-primary/10 text-primary">
+                    <c.icon className="h-5 w-5" />
+                  </span>
+                  <h3 className="mt-5 text-lg font-medium">{c.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{c.body}</p>
+                  <span className="mt-6 inline-flex items-center gap-1.5 text-sm text-primary">
+                    Open <ArrowRight className="h-3.5 w-3.5" />
+                  </span>
+                </Link>
+              </TiltCard>
+            </Reveal>
           ))}
         </div>
 
         <div className="mt-24 grid gap-4 lg:grid-cols-3">
-          {[
-            ["9", "Bodies modelled", "Terrestrial planets, ocean worlds and icy moons"],
-            ["10", "Missions archived", "Apollo · Voyager · Cassini · Artemis · Clipper"],
-            ["12", "Metrics per body", "Sourced from published planetary science literature"],
-          ].map(([n, t, s]) => (
-            <div key={t} className="panel-flat p-8">
-              <div className="font-display text-5xl font-semibold tracking-tight text-primary">{n}</div>
-              <div className="mt-3 text-sm font-medium">{t}</div>
-              <div className="mt-1 text-sm text-muted-foreground">{s}</div>
-            </div>
+          {(
+            [
+              [9, "Bodies modelled", "Terrestrial planets, ocean worlds and icy moons"],
+              [10, "Missions archived", "Apollo · Voyager · Cassini · Artemis · Clipper"],
+              [12, "Metrics per body", "Sourced from published planetary science literature"],
+            ] as const
+          ).map(([n, t, s], i) => (
+            <Reveal key={t} delay={i * 0.08} y={20}>
+              <div className="panel-flat p-8">
+                <div className="font-display text-5xl font-semibold tracking-tight text-primary">
+                  <CountUp to={n} />
+                </div>
+                <div className="mt-3 text-sm font-medium">{t}</div>
+                <div className="mt-1 text-sm text-muted-foreground">{s}</div>
+              </div>
+            </Reveal>
           ))}
         </div>
       </div>

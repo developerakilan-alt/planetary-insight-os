@@ -11,11 +11,13 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as ArRouteImport } from './routes/ar'
 import { Route as CopilotRouteImport } from './routes/copilot'
 import { Route as ExplorerRouteImport } from './routes/explorer'
 import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as MissionsRouteImport } from './routes/missions'
 import { Route as ResearchRouteImport } from './routes/research'
+import { Route as TelemetryRouteImport } from './routes/telemetry'
 import { Route as ExplorerIndexRouteImport } from './routes/explorer.index'
 import { Route as ExplorerBodyRouteImport } from './routes/explorer.$body'
 
@@ -27,6 +29,11 @@ const IndexRoute = IndexRouteImport.update({
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ArRoute = ArRouteImport.update({
+  id: '/ar',
+  path: '/ar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CopilotRoute = CopilotRouteImport.update({
@@ -54,6 +61,11 @@ const ResearchRoute = ResearchRouteImport.update({
   path: '/research',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TelemetryRoute = TelemetryRouteImport.update({
+  id: '/telemetry',
+  path: '/telemetry',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ExplorerIndexRoute = ExplorerIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -68,21 +80,25 @@ const ExplorerBodyRoute = ExplorerBodyRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/ar': typeof ArRoute
   '/copilot': typeof CopilotRoute
   '/explorer': typeof ExplorerRouteWithChildren
   '/gallery': typeof GalleryRoute
   '/missions': typeof MissionsRoute
   '/research': typeof ResearchRoute
+  '/telemetry': typeof TelemetryRoute
   '/explorer/$body': typeof ExplorerBodyRoute
   '/explorer/': typeof ExplorerIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/ar': typeof ArRoute
   '/copilot': typeof CopilotRoute
   '/gallery': typeof GalleryRoute
   '/missions': typeof MissionsRoute
   '/research': typeof ResearchRoute
+  '/telemetry': typeof TelemetryRoute
   '/explorer/$body': typeof ExplorerBodyRoute
   '/explorer': typeof ExplorerIndexRoute
 }
@@ -90,11 +106,13 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/ar': typeof ArRoute
   '/copilot': typeof CopilotRoute
   '/explorer': typeof ExplorerRouteWithChildren
   '/gallery': typeof GalleryRoute
   '/missions': typeof MissionsRoute
   '/research': typeof ResearchRoute
+  '/telemetry': typeof TelemetryRoute
   '/explorer/$body': typeof ExplorerBodyRoute
   '/explorer/': typeof ExplorerIndexRoute
 }
@@ -103,32 +121,38 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/ar'
     | '/copilot'
     | '/explorer'
     | '/gallery'
     | '/missions'
     | '/research'
+    | '/telemetry'
     | '/explorer/$body'
     | '/explorer/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
+    | '/ar'
     | '/copilot'
     | '/gallery'
     | '/missions'
     | '/research'
+    | '/telemetry'
     | '/explorer/$body'
     | '/explorer'
   id:
     | '__root__'
     | '/'
     | '/about'
+    | '/ar'
     | '/copilot'
     | '/explorer'
     | '/gallery'
     | '/missions'
     | '/research'
+    | '/telemetry'
     | '/explorer/$body'
     | '/explorer/'
   fileRoutesById: FileRoutesById
@@ -136,11 +160,13 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  ArRoute: typeof ArRoute
   CopilotRoute: typeof CopilotRoute
   ExplorerRoute: typeof ExplorerRouteWithChildren
   GalleryRoute: typeof GalleryRoute
   MissionsRoute: typeof MissionsRoute
   ResearchRoute: typeof ResearchRoute
+  TelemetryRoute: typeof TelemetryRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -157,6 +183,13 @@ declare module '@tanstack/react-router' {
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ar': {
+      id: '/ar'
+      path: '/ar'
+      fullPath: '/ar'
+      preLoaderRoute: typeof ArRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/copilot': {
@@ -194,6 +227,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResearchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/telemetry': {
+      id: '/telemetry'
+      path: '/telemetry'
+      fullPath: '/telemetry'
+      preLoaderRoute: typeof TelemetryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/explorer/': {
       id: '/explorer/'
       path: '/'
@@ -228,12 +268,24 @@ const ExplorerRouteWithChildren = ExplorerRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  ArRoute: ArRoute,
   CopilotRoute: CopilotRoute,
   ExplorerRoute: ExplorerRouteWithChildren,
   GalleryRoute: GalleryRoute,
   MissionsRoute: MissionsRoute,
   ResearchRoute: ResearchRoute,
+  TelemetryRoute: TelemetryRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

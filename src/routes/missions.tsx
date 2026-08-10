@@ -1,9 +1,14 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Globe2, Route as RouteIcon } from "lucide-react";
 import { MISSIONS, type Mission } from "@/data/missions";
+import { z } from "zod";
+
+const searchSchema = z.object({ mission: z.string().optional() });
 
 export const Route = createFileRoute("/missions")({
+  validateSearch: searchSchema,
   head: () => ({
     meta: [
       { title: "Mission Archive — Cosmos OS" },
@@ -15,7 +20,8 @@ export const Route = createFileRoute("/missions")({
       { property: "og:title", content: "Mission Archive — Cosmos OS" },
       {
         property: "og:description",
-        content: "Apollo, Voyager, Cassini, Curiosity, Perseverance, Artemis and Europa Clipper in one timeline.",
+        content:
+          "Apollo, Voyager, Cassini, Curiosity, Perseverance, Artemis and Europa Clipper in one timeline.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -26,14 +32,30 @@ export const Route = createFileRoute("/missions")({
 
 function Missions() {
   const sorted = [...MISSIONS].sort((a, b) => a.year - b.year);
+  const search = Route.useSearch();
+  const navigate = useNavigate();
   const [active, setActive] = useState<Mission>(sorted[0]!);
+
+  useEffect(() => {
+    if (!search.mission) return;
+    const m = MISSIONS.find((x) => x.id === search.mission);
+    if (m) setActive(m);
+  }, [search.mission]);
+
+  const select = (m: Mission) => {
+    setActive(m);
+    navigate({ to: "/missions", search: { mission: m.id }, replace: true });
+  };
 
   return (
     <div className="mx-auto max-w-[1600px] px-6 pb-24 pt-10">
       <div className="label-tele">Mission archive</div>
-      <h1 className="mt-3 text-[clamp(2rem,4vw,3.25rem)] font-semibold">Six decades of planetary operations</h1>
+      <h1 className="mt-3 text-[clamp(2rem,4vw,3.25rem)] font-semibold">
+        Six decades of planetary operations
+      </h1>
       <p className="mt-4 max-w-2xl text-muted-foreground">
-        Select a mission to inspect its target, landing coordinates and the science it returned.
+        Select a mission to inspect its target, landing coordinates, surface traverse and the
+        science it returned.
       </p>
 
       <div className="mt-12 overflow-x-auto pb-4">
@@ -42,7 +64,7 @@ function Missions() {
           {sorted.map((m) => (
             <button
               key={m.id}
-              onClick={() => setActive(m)}
+              onClick={() => select(m)}
               className="group relative flex flex-1 flex-col items-center gap-3"
             >
               <span
@@ -75,7 +97,9 @@ function Missions() {
       >
         <div className="panel p-8">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="label-tele rounded-full border border-border px-2.5 py-1">{active.agency}</span>
+            <span className="label-tele rounded-full border border-border px-2.5 py-1">
+              {active.agency}
+            </span>
             <span
               className="label-tele rounded-full px-2.5 py-1"
               style={{
@@ -96,7 +120,10 @@ function Missions() {
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
             <Stat label="Target" value={active.targetLabel} />
             <Stat label="Operational" value={`${active.year} – ${active.endYear ?? "present"}`} />
-            <Stat label="Landing site" value={active.site ? active.site.name : "No surface element"} />
+            <Stat
+              label="Landing site"
+              value={active.site ? active.site.name : "No surface element"}
+            />
           </div>
 
           <div className="mt-8">
@@ -110,6 +137,36 @@ function Missions() {
               ))}
             </ul>
           </div>
+
+          {active.traverse && (
+            <div className="mt-8 rounded-2xl border border-primary/20 bg-primary/5 p-5">
+              <div className="label-tele flex items-center gap-2 text-primary">
+                <RouteIcon className="h-3.5 w-3.5" /> Surface traverse
+              </div>
+              <div className="mt-2 text-sm font-medium">{active.traverse.label}</div>
+              <p className="mt-1 text-xs text-muted-foreground">{active.traverse.note}</p>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {active.traverse.points.map((p, i) => (
+                  <span
+                    key={i}
+                    className="label-tele rounded-full border border-border bg-background/60 px-2 py-1 text-[9px]"
+                  >
+                    {i === 0 ? "landing" : `WP${i}`} · {p.lat.toFixed(2)}°, {p.lon.toFixed(2)}°
+                  </span>
+                ))}
+              </div>
+              {active.target !== "outer-system" && active.target !== "deep-field" && (
+                <Link
+                  to="/explorer/$body"
+                  params={{ body: active.target }}
+                  search={{ traverse: active.id }}
+                  className="mt-4 inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+                >
+                  <Globe2 className="h-4 w-4" /> Trace this path on the 3D globe
+                </Link>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="panel relative overflow-hidden p-8">
@@ -133,6 +190,16 @@ function Missions() {
               <div className="font-mono text-sm">
                 {active.site.lat}° , {active.site.lon}°
               </div>
+              {active.target !== "outer-system" && active.target !== "deep-field" && (
+                <Link
+                  to="/explorer/$body"
+                  params={{ body: active.target }}
+                  search={{ lat: String(active.site.lat), lon: String(active.site.lon) }}
+                  className="mt-3 inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+                >
+                  <Globe2 className="h-4 w-4" /> Open landing site on globe
+                </Link>
+              )}
             </div>
           )}
         </div>

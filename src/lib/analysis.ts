@@ -91,7 +91,9 @@ export function analyseSite(body: Body, lat: number, lon: number): SiteAnalysis 
       objective: [
         "Deploy and characterise the landing ellipse regolith",
         "Traverse to the nearest outcrop for stratigraphic imaging",
-        iceProbability > 0.4 ? "Subsurface radar sounding for volatile deposits" : "Sample dune-field sediment",
+        iceProbability > 0.4
+          ? "Subsurface radar sounding for volatile deposits"
+          : "Sample dune-field sediment",
         "Cache sample tubes at a return-accessible depot",
       ][i] as string,
     };

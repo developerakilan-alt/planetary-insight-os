@@ -5,10 +5,12 @@ import * as THREE from "three";
 export function Starfield({ count = 2600, radius = 90 }: { count?: number; radius?: number }) {
   const ref = useRef<THREE.Points>(null);
 
-  const { positions, colors, sizes } = useMemo(() => {
+  const { positions, colors, sizes, baseSizes, phases } = useMemo(() => {
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
     const sizes = new Float32Array(count);
+    const baseSizes = new Float32Array(count);
+    const phases = new Float32Array(count);
     const tints = [
       new THREE.Color("#ffffff"),
       new THREE.Color("#cfe6ff"),
@@ -29,13 +31,25 @@ export function Starfield({ count = 2600, radius = 90 }: { count?: number; radiu
       colors[i * 3] = c.r * b;
       colors[i * 3 + 1] = c.g * b;
       colors[i * 3 + 2] = c.b * b;
-      sizes[i] = Math.random() < 0.06 ? 2.6 : 0.9 + Math.random() * 0.8;
+      const base = Math.random() < 0.06 ? 2.6 : 0.9 + Math.random() * 0.8;
+      baseSizes[i] = base;
+      sizes[i] = base;
+      phases[i] = Math.random() * Math.PI * 2;
     }
-    return { positions, colors, sizes };
+    return { positions, colors, sizes, baseSizes, phases };
   }, [count, radius]);
 
-  useFrame((_, dt) => {
-    if (ref.current) ref.current.rotation.y += dt * 0.006;
+  useFrame(({ clock }, dt) => {
+    if (ref.current) {
+      ref.current.rotation.y += dt * 0.006;
+      const t = clock.elapsedTime;
+      const attr = ref.current.geometry.attributes["size"] as THREE.BufferAttribute;
+      for (let i = 0; i < count; i++) {
+        const twinkle = 0.72 + 0.28 * Math.sin(t * 2.2 + phases[i]!);
+        attr.setX(i, baseSizes[i]! * twinkle);
+      }
+      attr.needsUpdate = true;
+    }
   });
 
   return (

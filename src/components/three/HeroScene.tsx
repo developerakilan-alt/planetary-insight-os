@@ -4,6 +4,7 @@ import * as THREE from "three";
 import { BODIES, type BodyId, bodyMap } from "@/data/bodies";
 import { Planet } from "./Planet";
 import { Starfield } from "./Starfield";
+import { MilkyWay } from "./SpaceEffects";
 
 function Rig({ bodyId }: { bodyId: BodyId }) {
   const group = useRef<THREE.Group>(null);
@@ -54,6 +55,7 @@ export default function HeroScene({ bodyId }: { bodyId: BodyId }) {
       style={{ position: "absolute", inset: 0 }}
     >
       <Suspense fallback={null}>
+        <MilkyWay />
         <Starfield count={2400} radius={70} />
         <Rig bodyId={bodyId} />
       </Suspense>

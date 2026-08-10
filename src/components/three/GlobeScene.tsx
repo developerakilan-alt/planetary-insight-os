@@ -19,7 +19,7 @@ export function latLonToVec3(lat: number, lon: number, r = 1) {
 export function vec3ToLatLon(v: THREE.Vector3) {
   const n = v.clone().normalize();
   const lat = 90 - (Math.acos(n.y) * 180) / Math.PI;
-  let lon = ((Math.atan2(n.z, -n.x) * 180) / Math.PI) - 180;
+  let lon = (Math.atan2(n.z, -n.x) * 180) / Math.PI - 180;
   if (lon < -180) lon += 360;
   return { lat, lon };
 }
@@ -93,7 +93,11 @@ export default function GlobeScene({
               <Marker key={l.name} position={latLonToVec3(l.lat, l.lon, 1.02)} label={l.name} />
             ))}
             {pick && (
-              <Marker position={latLonToVec3(pick.lat, pick.lon, 1.02)} tone="warning" label="Candidate site" />
+              <Marker
+                position={latLonToVec3(pick.lat, pick.lon, 1.02)}
+                tone="warning"
+                label="Candidate site"
+              />
             )}
           </Planet>
         </group>

@@ -1,9 +1,23 @@
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Html } from "@react-three/drei";
 import { Suspense, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { BODIES, type Body, type BodyId } from "@/data/bodies";
+import { MISSIONS, type Mission } from "@/data/missions";
+import { solarSystemPositionsAt, type EpochPosition } from "@/lib/ephemeris";
+import { chartRadius, formatSpacecraftDistance, type SpacecraftPosition } from "@/lib/spacecraft";
 import { Planet } from "./Planet";
 import { Starfield } from "./Starfield";
+import { AsteroidBelt, Comet, LivingSun, MilkyWay, ShootingStars } from "./SpaceEffects";
+
+const MISSION_COLORS: Record<Mission["type"], string> = {
+  lander: "#F5C542",
+  orbiter: "#4FD1FF",
+  flyby: "#9B8CFF",
+  rover: "#7EF9C6",
+  crewed: "#6EE7B7",
+  observatory: "#C084FC",
+};
 
 function Orbit({ radius }: { radius: number }) {
   const points = useMemo(() => {
@@ -17,7 +31,12 @@ function Orbit({ radius }: { radius: number }) {
   const geom = useMemo(() => new THREE.BufferGeometry().setFromPoints(points), [points]);
   return (
     <primitive
-      object={new THREE.Line(geom, new THREE.LineBasicMaterial({ color: "#4FD1FF", transparent: true, opacity: 0.14 }))}
+      object={
+        new THREE.Line(
+          geom,
+          new THREE.LineBasicMaterial({ color: "#4FD1FF", transparent: true, opacity: 0.14 }),
+        )
+      }
     />
   );
 }
@@ -27,23 +46,29 @@ function OrbitingBody({
   onSelect,
   onHover,
   selected,
+  fixed,
 }: {
   body: Body;
   onSelect: (id: BodyId) => void;
   onHover: (id: BodyId | null) => void;
   selected: boolean;
+  fixed?: EpochPosition | null;
 }) {
   const ref = useRef<THREE.Group>(null);
   const angle = useRef(Math.random() * Math.PI * 2);
   useFrame((_, dt) => {
     const t = Math.min(dt, 0.05);
-    angle.current += (t * 6) / Math.sqrt(body.orbitPeriodDays);
     if (ref.current) {
-      ref.current.position.set(
-        Math.cos(angle.current) * body.orbitRadius,
-        Math.sin(angle.current * 0.6) * 0.4,
-        Math.sin(angle.current) * body.orbitRadius,
-      );
+      if (fixed) {
+        ref.current.position.set(fixed.x, 0, fixed.z);
+      } else {
+        angle.current += (t * 6) / Math.sqrt(body.orbitPeriodDays);
+        ref.current.position.set(
+          Math.cos(angle.current) * body.orbitRadius,
+          Math.sin(angle.current * 0.6) * 0.4,
+          Math.sin(angle.current) * body.orbitRadius,
+        );
+      }
       const target = selected ? 1.35 : 1;
       ref.current.scale.lerp(new THREE.Vector3(target, target, target), t * 4);
     }
@@ -66,7 +91,11 @@ function OrbitingBody({
           document.body.style.cursor = "auto";
         }}
       >
-        <Planet body={body} scale={Math.max(0.42, body.radius * 0.95)} options={{ quality: "low" }} />
+        <Planet
+          body={body}
+          scale={Math.max(0.42, body.radius * 0.95)}
+          options={{ quality: "low" }}
+        />
         <mesh visible={false}>
           <sphereGeometry args={[Math.max(0.8, body.radius * 1.6), 12, 8]} />
           <meshBasicMaterial />
@@ -76,44 +105,46 @@ function OrbitingBody({
   );
 }
 
-function Sun() {
-  const ref = useRef<THREE.Mesh>(null);
-  useFrame(({ clock }) => {
-    if (ref.current) {
-      const s = 1 + Math.sin(clock.elapsedTime * 0.8) * 0.015;
-      ref.current.scale.setScalar(s);
-    }
-  });
-  return (
-    <group>
-      <mesh ref={ref}>
-        <sphereGeometry args={[2.2, 48, 24]} />
-        <meshBasicMaterial color="#ffd9a0" />
-      </mesh>
-      <mesh scale={1.55}>
-        <sphereGeometry args={[2.2, 32, 16]} />
-        <meshBasicMaterial color="#ff9d3c" transparent opacity={0.12} side={THREE.BackSide} />
-      </mesh>
-      <pointLight intensity={400} distance={120} color="#fff0d4" />
-    </group>
-  );
-}
-
 function CameraRig({ focus }: { focus: BodyId | null }) {
   const { camera } = useThree();
-  const target = useRef(new THREE.Vector3(0, 0, 0));
-  useFrame((state, dt) => {
+  const intro = useRef(0);
+  const orbit = useRef(Math.random() * Math.PI * 2);
+  const lastFocus = useRef<BodyId | null>(null);
+  const swoop = useRef(0);
+
+  useFrame((_, dt) => {
     const t = Math.min(dt, 0.05);
+    if (focus !== lastFocus.current) {
+      lastFocus.current = focus;
+      swoop.current = 1;
+    }
+    intro.current = Math.min(1, intro.current + t * 0.5);
+    swoop.current = Math.max(0, swoop.current - t * 1.3);
+
     const body = BODIES.find((b) => b.id === focus);
-    const dist = body ? body.orbitRadius + 10 : 52;
-    const height = body ? 8 : 22;
+    const dist = body ? body.orbitRadius + 9 : 52;
+    const height = body ? 7 : 22;
+    orbit.current += t * (focus ? 0.07 : 0.02);
+
     const desired = new THREE.Vector3(
-      Math.sin(state.clock.elapsedTime * 0.02) * dist * 0.25,
-      height,
-      dist,
+      Math.sin(orbit.current) * dist * 0.3,
+      height + Math.sin(orbit.current * 1.7) * 2.2,
+      Math.cos(orbit.current) * dist * 0.3 + dist * 0.72,
     );
-    camera.position.lerp(desired, t * 1.1);
-    camera.lookAt(target.current);
+
+    const ease = 1 - Math.pow(1 - intro.current, 3);
+    desired.multiplyScalar(1 + (1 - ease) * 1.6);
+    desired.y += (1 - ease) * 46;
+
+    if (swoop.current > 0) {
+      const s = Math.sin(swoop.current * Math.PI);
+      camera.position.multiplyScalar(1 - 0.14 * s);
+    }
+
+    const lambda = focus ? 2.1 : 1.15;
+    const damp = 1 - Math.exp(-lambda * t);
+    camera.position.lerp(desired, damp);
+    camera.lookAt(0, 0, 0);
   });
   return null;
 }
@@ -121,11 +152,23 @@ function CameraRig({ focus }: { focus: BodyId | null }) {
 export default function SolarSystemScene({
   onSelect,
   focus,
+  epoch,
+  onMissionSelect,
+  spacecraft,
 }: {
   onSelect: (id: BodyId) => void;
   focus: BodyId | null;
+  /** when set, bodies are placed at their real ephemeris position (time-travel) */
+  epoch?: Date | null | undefined;
+  /** callback fired when a mission marker is clicked in the mission layer */
+  onMissionSelect?: ((id: string) => void) | undefined;
+  /** real spacecraft positions (JPL Horizons) for the current epoch, if any */
+  spacecraft?: SpacecraftPosition[] | null | undefined;
 }) {
   const [hovered, setHovered] = useState<BodyId | null>(null);
+
+  const positions = useMemo(() => (epoch ? solarSystemPositionsAt(epoch) : null), [epoch]);
+
   return (
     <Canvas
       dpr={[1, 1.6]}
@@ -135,8 +178,12 @@ export default function SolarSystemScene({
     >
       <Suspense fallback={null}>
         <ambientLight intensity={0.25} />
+        <MilkyWay />
         <Starfield count={2000} radius={110} />
-        <Sun />
+        <LivingSun />
+        <AsteroidBelt />
+        <ShootingStars />
+        <Comet />
         {BODIES.map((b) => (
           <Orbit key={`o-${b.id}`} radius={b.orbitRadius} />
         ))}
@@ -147,10 +194,178 @@ export default function SolarSystemScene({
             onSelect={onSelect}
             onHover={setHovered}
             selected={hovered === b.id || focus === b.id}
+            fixed={positions ? (positions[b.id] ?? null) : null}
           />
         ))}
+        <MissionLayer epoch={epoch} positions={positions} onMissionSelect={onMissionSelect} />
+        <SpacecraftLayer positions={spacecraft ?? null} />
         <CameraRig focus={focus} />
       </Suspense>
     </Canvas>
   );
+}
+
+/** Mission trajectory overlay: highlights each mission's target orbit in the
+ * mission's type color and tracks a marker on the current planet position. */
+function MissionLayer({
+  epoch,
+  positions,
+  onMissionSelect,
+}: {
+  /** when set, bodies are placed at their real ephemeris position (time-travel) */
+  epoch?: Date | null | undefined;
+  positions: Record<BodyId, EpochPosition> | null;
+  onMissionSelect?: ((id: string) => void) | undefined;
+}) {
+  const visibleMissions = useMemo(
+    () =>
+      MISSIONS.filter(
+        (m): m is Mission & { target: BodyId } =>
+          m.target !== "outer-system" && m.target !== "deep-field",
+      ),
+    [],
+  );
+  const angleRefs = useRef<Record<string, number>>({});
+
+  useFrame((_, dt) => {
+    const t = Math.min(dt, 0.05);
+    for (const m of visibleMissions) {
+      const b = BODIES.find((x) => x.id === m.target);
+      if (!b) continue;
+      angleRefs.current[m.id] ??= Math.random() * Math.PI * 2;
+      angleRefs.current[m.id] =
+        (angleRefs.current[m.id]! + (t * 6) / Math.sqrt(b.orbitPeriodDays)) % (Math.PI * 2);
+    }
+  });
+
+  return (
+    <group>
+      {visibleMissions.map((m) => {
+        const b = BODIES.find((x) => x.id === m.target);
+        if (!b) return null;
+        const color = MISSION_COLORS[m.type] ?? "#4FD1FF";
+        const fixed = positions?.[m.target];
+        let pos = { x: 0, z: 0 };
+        if (epoch && fixed) {
+          pos = fixed;
+        } else {
+          const a = angleRefs.current[m.id] ?? 0;
+          pos = { x: Math.cos(a) * b.orbitRadius, z: Math.sin(a) * b.orbitRadius };
+        }
+        return (
+          <group key={m.id}>
+            <OrbitDashed radius={b.orbitRadius} color={color} />
+            <group position={[pos.x, 0, pos.z]}>
+              <mesh
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onMissionSelect?.(m.id);
+                }}
+              >
+                <sphereGeometry args={[0.32, 12, 12]} />
+                <meshBasicMaterial color={color} transparent opacity={0.9} />
+              </mesh>
+              <mesh
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onMissionSelect?.(m.id);
+                }}
+              >
+                <ringGeometry args={[0.45, 0.58, 24]} />
+                <meshBasicMaterial
+                  color={color}
+                  transparent
+                  opacity={0.35}
+                  side={THREE.DoubleSide}
+                />
+              </mesh>
+              <Html distanceFactor={60} center>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onMissionSelect?.(m.id);
+                  }}
+                  className="label-tele whitespace-nowrap rounded-md border border-border bg-background/80 px-2 py-1 text-[10px] text-foreground backdrop-blur"
+                >
+                  {m.name.split("—")[0]}
+                </button>
+              </Html>
+            </group>
+          </group>
+        );
+      })}
+    </group>
+  );
+}
+
+/** Real spacecraft markers (JPL Horizons): glowing probe markers with a
+ * distance readout. Only rendered when the time-travel ephemeris is active. */
+function SpacecraftLayer({ positions }: { positions: SpacecraftPosition[] | null }) {
+  if (!positions || positions.length === 0) return null;
+  return (
+    <group>
+      {positions.map((p) => (
+        <SpacecraftMarker key={p.spacecraft.id} position={p} />
+      ))}
+    </group>
+  );
+}
+
+function SpacecraftMarker({ position }: { position: SpacecraftPosition }) {
+  const ref = useRef<THREE.Mesh>(null);
+  const scale = Math.max(0.3, Math.min(0.6, chartRadius(position.x, position.z) / 90));
+  useFrame(({ clock }) => {
+    if (ref.current) {
+      const pulse = 1 + Math.sin(clock.elapsedTime * 2.2) * 0.18;
+      ref.current.scale.setScalar(scale * pulse);
+    }
+  });
+  const color = position.spacecraft.color;
+  return (
+    <group position={[position.x, 0, position.z]}>
+      <mesh ref={ref}>
+        <sphereGeometry args={[0.22, 12, 12]} />
+        <meshBasicMaterial color={color} transparent opacity={0.95} />
+      </mesh>
+      <mesh rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.34, 0.46, 24]} />
+        <meshBasicMaterial color={color} transparent opacity={0.4} side={THREE.DoubleSide} />
+      </mesh>
+      <Html distanceFactor={60} center>
+        <div
+          className="label-tele flex items-center gap-1.5 whitespace-nowrap rounded-md border border-border bg-background/80 px-2 py-1 text-[10px] text-foreground backdrop-blur"
+          style={{ pointerEvents: "none" }}
+        >
+          <span className="h-1.5 w-1.5 rounded-full" style={{ background: color }} />
+          <span>
+            {position.spacecraft.name} · {formatSpacecraftDistance(position)}
+          </span>
+        </div>
+      </Html>
+    </group>
+  );
+}
+
+function OrbitDashed({ radius, color }: { radius: number; color: string }) {
+  const line = useMemo(() => {
+    const pts: THREE.Vector3[] = [];
+    for (let i = 0; i <= 200; i++) {
+      const a = (i / 200) * Math.PI * 2;
+      pts.push(new THREE.Vector3(Math.cos(a) * radius, 0, Math.sin(a) * radius));
+    }
+    const geom = new THREE.BufferGeometry().setFromPoints(pts);
+    const line = new THREE.Line(
+      geom,
+      new THREE.LineDashedMaterial({
+        color,
+        transparent: true,
+        opacity: 0.35,
+        dashSize: 0.9,
+        gapSize: 0.7,
+      }),
+    );
+    line.computeLineDistances();
+    return line;
+  }, [radius, color]);
+  return <primitive object={line} />;
 }

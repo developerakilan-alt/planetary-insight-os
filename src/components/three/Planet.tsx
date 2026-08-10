@@ -3,6 +3,7 @@ import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import type { Body } from "@/data/bodies";
 import { ATMO_FRAG, CLOUD_FRAG, SURFACE_FRAG, SURFACE_VERT } from "./shaders";
+import { RingSystem } from "./SpaceEffects";
 
 export interface PlanetOptions {
   elevation?: boolean;
@@ -87,8 +88,7 @@ export function Planet({
       geology ? 1 : 0,
       t * 4,
     );
-    surfaceUniforms.uLightMode.value =
-      lighting === "sun" ? 0 : lighting === "studio" ? 1 : 2;
+    surfaceUniforms.uLightMode.value = lighting === "sun" ? 0 : lighting === "studio" ? 1 : 2;
     const dir =
       lighting === "terminator"
         ? new THREE.Vector3(-0.15, 0.2, 1)
@@ -141,6 +141,8 @@ export function Planet({
           />
         </mesh>
       )}
+
+      {body.id === "saturn" && <RingSystem />}
       {children}
     </group>
   );

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -13,7 +13,11 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { toast } from "sonner";
+import { FileDown, Printer } from "lucide-react";
 import { BODIES, type BodyId } from "@/data/bodies";
+import { SonifyToggle } from "@/components/SonifyToggle";
+import { buildComparisonMarkdown, downloadTextFile } from "@/lib/report";
 
 export const Route = createFileRoute("/research")({
   head: () => ({
@@ -27,7 +31,8 @@ export const Route = createFileRoute("/research")({
       { property: "og:title", content: "Research Console — Cosmos OS" },
       {
         property: "og:description",
-        content: "Compare planetary datasets side by side with charts, radar profiles and a full metric table.",
+        content:
+          "Compare planetary datasets side by side with charts, radar profiles and a full metric table.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -44,6 +49,32 @@ function Research() {
 
   const toggle = (id: BodyId) =>
     setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id].slice(-5)));
+
+  const sonifyValues = useMemo(
+    () =>
+      bodies.map((b) => ({
+        label: b.name,
+        value: b.metrics.gravity,
+        range: [0, 26] as [number, number],
+      })),
+    [bodies],
+  );
+
+  const downloadReport = () => {
+    if (bodies.length === 0) {
+      toast.error("Select at least one body to export");
+      return;
+    }
+    downloadTextFile(
+      `cosmos-os-comparison-${new Date().toISOString().slice(0, 10)}.md`,
+      buildComparisonMarkdown(bodies),
+    );
+    toast.success("Markdown brief downloaded");
+  };
+
+  const printReport = () => {
+    window.print();
+  };
 
   const gravity = bodies.map((b) => ({ name: b.name, value: b.metrics.gravity }));
   const temp = bodies.map((b) => ({
@@ -62,16 +93,26 @@ function Research() {
             : axis === "Radius"
               ? (b.metrics.radiusKm / 6400) * 100
               : axis === "Water"
-                ? (b.metrics.water.includes("ocean") ? 95 : b.metrics.water.includes("ice") ? 60 : 15)
+                ? b.metrics.water.includes("ocean")
+                  ? 95
+                  : b.metrics.water.includes("ice")
+                    ? 60
+                    : 15
                 : Math.min(100, Math.log10(b.metrics.pressureBar + 1e-15) * 8 + 100);
     });
     return row;
   });
 
-  const colors = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)"];
+  const colors = [
+    "var(--chart-1)",
+    "var(--chart-2)",
+    "var(--chart-3)",
+    "var(--chart-4)",
+    "var(--chart-5)",
+  ];
 
   return (
-    <div className="mx-auto max-w-[1600px] px-6 pb-24 pt-10">
+    <div className="print-report mx-auto max-w-[1600px] px-6 pb-24 pt-10">
       <div className="label-tele">Research console</div>
       <h1 className="mt-3 text-[clamp(2rem,4vw,3.25rem)] font-semibold">Comparative planetology</h1>
       <p className="mt-4 max-w-2xl text-muted-foreground">
@@ -93,6 +134,22 @@ function Research() {
             {b.name}
           </button>
         ))}
+      </div>
+
+      <div className="mt-6 flex flex-wrap items-center gap-2">
+        <button
+          onClick={downloadReport}
+          className="flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-sm text-primary transition-colors hover:bg-primary/15"
+        >
+          <FileDown className="h-4 w-4" /> Export brief (.md)
+        </button>
+        <button
+          onClick={printReport}
+          className="flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <Printer className="h-4 w-4" /> Print / PDF
+        </button>
+        <SonifyToggle label="Sonify gravity" values={sonifyValues} />
       </div>
 
       <div className="mt-8 grid gap-4 xl:grid-cols-2">
@@ -188,12 +245,18 @@ function Research() {
           <tbody>
             {(
               [
-                ["Radius (km)", (b: (typeof BODIES)[number]) => b.metrics.radiusKm.toLocaleString()],
+                [
+                  "Radius (km)",
+                  (b: (typeof BODIES)[number]) => b.metrics.radiusKm.toLocaleString(),
+                ],
                 ["Gravity (m/s²)", (b: (typeof BODIES)[number]) => String(b.metrics.gravity)],
                 ["Pressure (bar)", (b: (typeof BODIES)[number]) => String(b.metrics.pressureBar)],
                 ["Atmosphere", (b: (typeof BODIES)[number]) => b.metrics.atmosphere],
                 ["Water", (b: (typeof BODIES)[number]) => b.metrics.water],
-                ["Escape velocity (km/s)", (b: (typeof BODIES)[number]) => String(b.metrics.escapeVelocity)],
+                [
+                  "Escape velocity (km/s)",
+                  (b: (typeof BODIES)[number]) => String(b.metrics.escapeVelocity),
+                ],
                 ["Magnetic field", (b: (typeof BODIES)[number]) => b.metrics.magneticField],
                 ["Orbital period", (b: (typeof BODIES)[number]) => b.metrics.orbitalPeriod],
               ] as const

@@ -178,8 +178,14 @@ varying vec3 vNormal;
 varying vec3 vWorld;
 void main(){
   vec3 V = normalize(cameraPosition - vWorld);
-  float fres = pow(1.0 - max(dot(normalize(vNormal), V), 0.0), 2.6);
-  float lit = clamp(dot(normalize(vNormal), normalize(uLightDir)) * 0.5 + 0.55, 0.0, 1.0);
-  gl_FragColor = vec4(uColor, fres * uIntensity * lit);
+  vec3 N = normalize(vNormal);
+  vec3 L = normalize(uLightDir);
+  // two-lobe fresnel: tight rim for the terminator edge, broad haze for the limb
+  float fres = pow(1.0 - max(dot(N, V), 0.0), 2.4);
+  float rim = pow(1.0 - abs(dot(N, V)), 3.4);
+  float lit = clamp(dot(N, L) * 0.5 + 0.55, 0.0, 1.0);
+  float day = smoothstep(0.15, 0.65, dot(N, L));
+  vec3 scatter = mix(uColor * 0.55, uColor, 0.3 + 0.7 * day);
+  gl_FragColor = vec4(scatter, (fres * 0.6 + rim * 0.4) * uIntensity * lit);
 }
 `;

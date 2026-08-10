@@ -1,6 +1,9 @@
 export function Nebula({ className = "" }: { className?: string }) {
   return (
-    <div className={`pointer-events-none absolute inset-0 overflow-hidden ${className}`} aria-hidden>
+    <div
+      className={`pointer-events-none absolute inset-0 overflow-hidden ${className}`}
+      aria-hidden
+    >
       <div
         className="absolute -left-[20%] top-[-30%] h-[80vh] w-[80vw] rounded-full opacity-[0.5] blur-[120px]"
         style={{
