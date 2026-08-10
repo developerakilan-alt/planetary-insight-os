@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Activity, Antenna, ArrowDownRight, ArrowUpRight, Orbit, Radio, Users } from "lucide-react";
 import { BODIES, type BodyId } from "@/data/bodies";
 import { PageMasthead } from "@/components/PageMasthead";
+import { Metric } from "@/components/Metric";
 import {
   dsnTargetName,
   fetchCrew,
@@ -233,10 +234,10 @@ function Telemetry() {
           </div>
 
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <Card label="Latitude" value={iss ? `${iss.latitude.toFixed(3)}°` : "—"} />
-            <Card label="Longitude" value={iss ? `${iss.longitude.toFixed(3)}°` : "—"} />
-            <Card label="Altitude" value={iss ? `${Math.round(iss.altitude)} km` : "—"} />
-            <Card
+            <Metric label="Latitude" value={iss ? `${iss.latitude.toFixed(3)}°` : "—"} />
+            <Metric label="Longitude" value={iss ? `${iss.longitude.toFixed(3)}°` : "—"} />
+            <Metric label="Altitude" value={iss ? `${Math.round(iss.altitude)} km` : "—"} />
+            <Metric
               label="Velocity"
               value={iss ? `${Math.round(iss.velocity).toLocaleString()} km/h` : "—"}
             />
@@ -357,10 +358,10 @@ function Telemetry() {
           </div>
 
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <Card label="Active dishes" value={dsnError ? "—" : String(dsn.length)} />
-            <Card label="Spacecraft in link" value={dsnError ? "—" : String(dsnTargets)} />
-            <Card label="Uplink signals" value={dsnError ? "—" : String(dsnUplinks)} />
-            <Card label="Downlink signals" value={dsnError ? "—" : String(dsnDownlinks)} />
+            <Metric label="Active dishes" value={dsnError ? "—" : String(dsn.length)} />
+            <Metric label="Spacecraft in link" value={dsnError ? "—" : String(dsnTargets)} />
+            <Metric label="Uplink signals" value={dsnError ? "—" : String(dsnUplinks)} />
+            <Metric label="Downlink signals" value={dsnError ? "—" : String(dsnDownlinks)} />
           </div>
 
           <div className="mt-5 space-y-2">
@@ -476,10 +477,13 @@ function Telemetry() {
 
           <div>
             <div className="grid grid-cols-2 gap-3">
-              <Card label="Martian sol" value={shot?.sol != null ? `Sol ${shot.sol}` : "—"} />
-              <Card label="Drive" value={shot?.drive ?? "—"} />
-              <Card label="Camera" value={shot?.camera ?? "—"} />
-              <Card label="Captured (UTC)" value={shot?.dateUtc ? formatUtc(shot.dateUtc) : "—"} />
+              <Metric label="Martian sol" value={shot?.sol != null ? `Sol ${shot.sol}` : "—"} />
+              <Metric label="Drive" value={shot?.drive ?? "—"} />
+              <Metric label="Camera" value={shot?.camera ?? "—"} />
+              <Metric
+                label="Captured (UTC)"
+                value={shot?.dateUtc ? formatUtc(shot.dateUtc) : "—"}
+              />
             </div>
             <p className="mt-4 line-clamp-4 text-xs leading-relaxed text-muted-foreground">
               {shot?.caption ?? "Waiting for the next downlinked frame from the rover…"}
@@ -501,13 +505,4 @@ function Telemetry() {
 
 function formatUtc(iso: string): string {
   return new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
-}
-
-function Card({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="panel-flat p-3">
-      <div className="label-tele">{label}</div>
-      <div className="mt-1 font-mono text-sm tabular-nums">{value}</div>
-    </div>
-  );
 }

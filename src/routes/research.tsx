@@ -14,7 +14,7 @@ import {
   YAxis,
 } from "recharts";
 import { toast } from "sonner";
-import { FileDown, Printer } from "lucide-react";
+import { FileDown, FileSpreadsheet, Printer } from "lucide-react";
 import { BODIES, type BodyId } from "@/data/bodies";
 import { SonifyToggle } from "@/components/SonifyToggle";
 import { buildComparisonMarkdown, downloadTextFile } from "@/lib/report";
@@ -75,6 +75,33 @@ function Research() {
 
   const printReport = () => {
     window.print();
+  };
+
+  const downloadCsv = () => {
+    if (bodies.length === 0) {
+      toast.error("Select at least one body to export");
+      return;
+    }
+    const rows = [
+      ["Parameter", ...bodies.map((b) => b.name)],
+      ["Radius (km)", ...bodies.map((b) => b.metrics.radiusKm.toLocaleString())],
+      ["Gravity (m/s²)", ...bodies.map((b) => String(b.metrics.gravity))],
+      ["Pressure (bar)", ...bodies.map((b) => String(b.metrics.pressureBar))],
+      ["Atmosphere", ...bodies.map((b) => b.metrics.atmosphere)],
+      ["Water", ...bodies.map((b) => b.metrics.water)],
+      ["Escape velocity (km/s)", ...bodies.map((b) => String(b.metrics.escapeVelocity))],
+      ["Magnetic field", ...bodies.map((b) => b.metrics.magneticField)],
+      ["Orbital period", ...bodies.map((b) => b.metrics.orbitalPeriod)],
+    ];
+    const csv = rows
+      .map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    downloadTextFile(
+      `cosmos-os-comparison-${new Date().toISOString().slice(0, 10)}.csv`,
+      csv,
+      "text/csv",
+    );
+    toast.success("CSV dataset downloaded");
   };
 
   const gravity = bodies.map((b) => ({ name: b.name, value: b.metrics.gravity }));
@@ -155,6 +182,12 @@ function Research() {
           className="flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <Printer className="h-4 w-4" /> Print / PDF
+        </button>
+        <button
+          onClick={downloadCsv}
+          className="flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <FileSpreadsheet className="h-4 w-4" /> Export CSV
         </button>
         <SonifyToggle label="Sonify gravity" values={sonifyValues} />
       </div>
