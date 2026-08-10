@@ -2,25 +2,28 @@ import { useEffect, useRef } from "react";
 
 /**
  * Soft radial glow that follows the pointer behind the cursor, slightly
- * brightening when hovering interactive elements.
+ * brightening when hovering interactive elements, plus a sparse "star
+ * constellation" particle trail that fades behind the pointer.
  *
  * Performance notes:
  * - The rAF loop runs ONLY while the pointer is moving; it stops ~150ms after
  *   the pointer goes idle (so it does zero work while you scroll).
- * - No `mix-blend-mode`: blending against the backdrop forces a full-page
- *   recomposite on every frame. A plain translucent gradient looks the same
- *   on the dark UI and composites for free.
+ * - Particles are DOM spans pooled through a fixed cap (14) and removed on a
+ *   timer, so memory stays bounded.
  * - Auto-disabled on touch devices and under `prefers-reduced-motion`.
  */
 export function CursorGlow() {
   const ref = useRef<HTMLDivElement>(null);
+  const trail = useRef<HTMLDivElement>(null);
   const target = useRef({ x: 0, y: 0 });
   const hot = useRef(false);
+  const lastSpark = useRef(0);
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const el = ref.current;
-    if (!el) return;
+    const trailEl = trail.current;
+    if (!el || !trailEl) return;
     let x = window.innerWidth / 2;
     let y = window.innerHeight / 2;
     let raf = 0;
@@ -47,9 +50,27 @@ export function CursorGlow() {
       raf = requestAnimationFrame(loop);
     };
 
+    const spawn = (px: number, py: number) => {
+      const now = performance.now();
+      if (now - lastSpark.current < 80) return;
+      lastSpark.current = now;
+      const size = 1 + Math.random() * 2.5;
+      const n = document.createElement("span");
+      n.style.cssText =
+        `position:absolute;left:${px}px;top:${py}px;width:${size}px;height:${size}px;` +
+        `border-radius:50%;background:var(--primary);` +
+        `box-shadow:0 0 6px color-mix(in oklab, var(--primary) 70%, transparent);` +
+        `opacity:0;transform:translate(-50%,-50%);pointer-events:none;` +
+        `animation:constellation-sparkle 0.7s ease-out forwards;`;
+      trailEl.appendChild(n);
+      while (trailEl.children.length > 14) trailEl.removeChild(trailEl.firstChild as Node);
+      window.setTimeout(() => n.remove(), 700);
+    };
+
     const onMove = (e: PointerEvent) => {
       target.current.x = e.clientX;
       target.current.y = e.clientY;
+      spawn(e.clientX + (Math.random() - 0.5) * 18, e.clientY + (Math.random() - 0.5) * 18);
       if (idleTimer) clearTimeout(idleTimer);
       idleTimer = setTimeout(stop, 150);
       start();
@@ -72,14 +93,21 @@ export function CursorGlow() {
   }, []);
 
   return (
-    <div
-      ref={ref}
-      aria-hidden
-      className="cursor-glow pointer-events-none fixed left-0 top-0 z-[997] h-[720px] w-[720px] rounded-full opacity-0"
-      style={{
-        background:
-          "radial-gradient(circle, color-mix(in oklab, var(--primary) 14%, transparent), transparent 62%)",
-      }}
-    />
+    <>
+      <div
+        ref={ref}
+        aria-hidden
+        className="cursor-glow pointer-events-none fixed left-0 top-0 z-[997] h-[720px] w-[720px] rounded-full opacity-0"
+        style={{
+          background:
+            "radial-gradient(circle, color-mix(in oklab, var(--primary) 14%, transparent), transparent 62%)",
+        }}
+      />
+      <div
+        ref={trail}
+        aria-hidden
+        className="pointer-events-none fixed left-0 top-0 z-[996] h-full w-full overflow-hidden"
+      />
+    </>
   );
 }

@@ -1,7 +1,15 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { lazy, useEffect, useState } from "react";
-import { ArrowUpRight, Calendar, Clock, Play, RefreshCcw, Satellite } from "lucide-react";
+import {
+  ArrowUpRight,
+  Calendar,
+  Clock,
+  Map as MapIcon,
+  Play,
+  RefreshCcw,
+  Satellite,
+} from "lucide-react";
 import { ClientOnly } from "@/components/ClientOnly";
 import { OnboardingTour } from "@/components/OnboardingTour";
 import { BODIES, type BodyId } from "@/data/bodies";
@@ -41,10 +49,21 @@ function toLocalISODate(d: Date): string {
 function Explorer() {
   const navigate = useNavigate();
   const [focus, setFocus] = useState<BodyId | null>(null);
+  const [mapView, setMapView] = useState(false);
   const [epoch, setEpoch] = useState<Date | null>(null);
   const [playing, setPlaying] = useState(false);
   const [showSpacecraft, setShowSpacecraft] = useState(true);
   const { positions: spacecraftPositions } = useSpacecraftPositions(epoch);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as Element | null;
+      if (t?.closest?.("input, textarea, select")) return;
+      if (e.key === "m" && !e.metaKey && !e.ctrlKey && !e.altKey) setMapView((v) => !v);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   const open = (id: BodyId) => navigate({ to: "/explorer/$body", params: { body: id } });
 
@@ -84,6 +103,7 @@ function Explorer() {
           onSelect={open}
           focus={focus}
           epoch={epoch}
+          mapView={mapView}
           spacecraft={showSpacecraft ? spacecraftPositions : null}
           onMissionSelect={(id) => navigate({ to: "/missions", search: { mission: id } })}
         />
@@ -119,7 +139,20 @@ function Explorer() {
         </div>
       </div>
 
-      <div className="pointer-events-auto absolute right-4 top-4 z-10 md:right-6 md:top-6">
+      <div className="pointer-events-auto absolute right-4 top-4 z-10 flex flex-col items-end gap-3 md:right-6 md:top-6">
+        <button
+          onClick={() => setMapView((v) => !v)}
+          aria-pressed={mapView}
+          className={`flex items-center gap-2 rounded-full border px-3 py-2 text-xs transition-colors ${
+            mapView
+              ? "border-primary/40 bg-primary/15 text-primary"
+              : "border-border bg-background/70 text-muted-foreground backdrop-blur hover:text-foreground"
+          }`}
+        >
+          <MapIcon className="h-3.5 w-3.5" />
+          {mapView ? "Planet view" : "Star map"}
+          <kbd className="label-tele rounded border border-border px-1 text-[9px]">M</kbd>
+        </button>
         <div className="panel p-4">
           <div className="flex items-center justify-between gap-4">
             <div>

@@ -456,6 +456,70 @@ body::before {
   animation-play-state: paused;
 }
 
+/* Hover-reveal scanline + corner brackets for instrument panels. */
+.scan-panel::before {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background:
+    linear-gradient(var(--primary), var(--primary)) top left / 14px 1px,
+    linear-gradient(var(--primary), var(--primary)) top left / 1px 14px,
+    linear-gradient(var(--primary), var(--primary)) top right / 14px 1px,
+    linear-gradient(var(--primary), var(--primary)) top right / 1px 14px,
+    linear-gradient(var(--primary), var(--primary)) bottom left / 14px 1px,
+    linear-gradient(var(--primary), var(--primary)) bottom left / 1px 14px,
+    linear-gradient(var(--primary), var(--primary)) bottom right / 14px 1px,
+    linear-gradient(var(--primary), var(--primary)) bottom right / 1px 14px;
+  background-repeat: no-repeat;
+}
+
+.scan-panel:hover::before {
+  opacity: 0.8;
+}
+
+.scan-panel::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 42%;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    color-mix(in oklab, var(--primary) 9%, transparent),
+    transparent
+  );
+  transform: translateY(-150%);
+}
+
+.scan-panel:hover::after {
+  animation: panel-scan 0.9s ease forwards;
+}
+
+@keyframes panel-scan {
+  to {
+    transform: translateY(360%);
+  }
+}
+
+@keyframes constellation-sparkle {
+  0% {
+    opacity: 0.9;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translateY(-16px) scale(0.2);
+  }
+}
+
 /* Guaranteed keyboard focus indicator for custom controls that do not
    already opt into a ring utility. */
 a:focus-visible:not([class*="ring-"]),

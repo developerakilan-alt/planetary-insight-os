@@ -68,13 +68,20 @@ export function WarpIntro() {
           animation: "warp-core 1.7s ease-out forwards",
         }}
       />
-      <div className="absolute inset-x-0 top-[58%] text-center">
+      <div className="absolute inset-x-0 top-[58%] flex flex-col items-center gap-1.5 text-center">
         <span
           className="label-tele text-[10px] text-foreground/50"
           style={{ animation: "warp-fade 0.9s ease-out forwards" }}
         >
           ESTABLISHING INTERPLANETARY LINK
         </span>
+        <div
+          className="label-tele flex flex-col items-center gap-0.5 text-[9px] text-foreground/40"
+          style={{ animation: "warp-fade 1.4s ease-out forwards" }}
+        >
+          <span>SYSTEM BOOT 04.2.1 · LOADING EPHEMERIS …</span>
+          <span>CALIBRATING RENDER PIPELINE … LINK ESTABLISHED</span>
+        </div>
       </div>
     </div>
   );

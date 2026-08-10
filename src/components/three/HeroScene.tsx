@@ -6,7 +6,7 @@ import { Planet } from "./Planet";
 import { Starfield } from "./Starfield";
 import { MilkyWay } from "./SpaceEffects";
 
-function Rig({ bodyId }: { bodyId: BodyId }) {
+function Rig({ bodyId, spin }: { bodyId: BodyId; spin: number }) {
   const group = useRef<THREE.Group>(null);
   const [shown, setShown] = useState<BodyId>(bodyId);
   const phase = useRef(1); // 1 = fully in
@@ -35,6 +35,12 @@ function Rig({ bodyId }: { bodyId: BodyId }) {
     const my = state.pointer.y * 0.08;
     group.current.rotation.x = THREE.MathUtils.lerp(group.current.rotation.x, -my, t * 2);
     group.current.position.y = THREE.MathUtils.lerp(group.current.position.y, mx * 0.3, t * 2);
+    // scroll-driven spin: one full revolution across the whole hero scroll
+    group.current.rotation.y = THREE.MathUtils.lerp(
+      group.current.rotation.y,
+      spin * Math.PI * 2,
+      t * 4,
+    );
   });
 
   const body = bodyMap[shown];
@@ -46,7 +52,14 @@ function Rig({ bodyId }: { bodyId: BodyId }) {
   );
 }
 
-export default function HeroScene({ bodyId }: { bodyId: BodyId }) {
+export default function HeroScene({
+  bodyId,
+  spin = 0,
+}: {
+  bodyId: BodyId;
+  /** 0…1 scroll progress; drives the planet's spin */
+  spin?: number;
+}) {
   return (
     <Canvas
       dpr={[1, 1.75]}
@@ -57,7 +70,7 @@ export default function HeroScene({ bodyId }: { bodyId: BodyId }) {
       <Suspense fallback={null}>
         <MilkyWay />
         <Starfield count={2400} radius={70} />
-        <Rig bodyId={bodyId} />
+        <Rig bodyId={bodyId} spin={spin} />
       </Suspense>
     </Canvas>
   );

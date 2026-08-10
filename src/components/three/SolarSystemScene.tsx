@@ -105,7 +105,7 @@ function OrbitingBody({
   );
 }
 
-function CameraRig({ focus }: { focus: BodyId | null }) {
+function CameraRig({ focus, mapView }: { focus: BodyId | null; mapView?: boolean | undefined }) {
   const { camera } = useThree();
   const intro = useRef(0);
   const orbit = useRef(Math.random() * Math.PI * 2);
@@ -120,6 +120,16 @@ function CameraRig({ focus }: { focus: BodyId | null }) {
     }
     intro.current = Math.min(1, intro.current + t * 0.5);
     swoop.current = Math.max(0, swoop.current - t * 1.3);
+    const ease = 1 - Math.pow(1 - intro.current, 3);
+    const damp = 1 - Math.exp(-2.1 * t);
+
+    if (mapView) {
+      // star-map view: pull far back to frame the whole system
+      const far = new THREE.Vector3(0, 84, 148).multiplyScalar(1 + (1 - ease) * 0.5);
+      camera.position.lerp(far, damp);
+      camera.lookAt(0, 0, 0);
+      return;
+    }
 
     const body = BODIES.find((b) => b.id === focus);
     const dist = body ? body.orbitRadius + 9 : 52;
@@ -132,7 +142,6 @@ function CameraRig({ focus }: { focus: BodyId | null }) {
       Math.cos(orbit.current) * dist * 0.3 + dist * 0.72,
     );
 
-    const ease = 1 - Math.pow(1 - intro.current, 3);
     desired.multiplyScalar(1 + (1 - ease) * 1.6);
     desired.y += (1 - ease) * 46;
 
@@ -142,8 +151,8 @@ function CameraRig({ focus }: { focus: BodyId | null }) {
     }
 
     const lambda = focus ? 2.1 : 1.15;
-    const damp = 1 - Math.exp(-lambda * t);
-    camera.position.lerp(desired, damp);
+    const dampFocus = 1 - Math.exp(-lambda * t);
+    camera.position.lerp(desired, dampFocus);
     camera.lookAt(0, 0, 0);
   });
   return null;
@@ -155,6 +164,7 @@ export default function SolarSystemScene({
   epoch,
   onMissionSelect,
   spacecraft,
+  mapView,
 }: {
   onSelect: (id: BodyId) => void;
   focus: BodyId | null;
@@ -164,6 +174,8 @@ export default function SolarSystemScene({
   onMissionSelect?: ((id: string) => void) | undefined;
   /** real spacecraft positions (JPL Horizons) for the current epoch, if any */
   spacecraft?: SpacecraftPosition[] | null | undefined;
+  /** star-map framing: pull the camera far back to view the whole system */
+  mapView?: boolean | undefined;
 }) {
   const [hovered, setHovered] = useState<BodyId | null>(null);
 
@@ -199,9 +211,64 @@ export default function SolarSystemScene({
         ))}
         <MissionLayer epoch={epoch} positions={positions} onMissionSelect={onMissionSelect} />
         <SpacecraftLayer positions={spacecraft ?? null} />
-        <CameraRig focus={focus} />
+        <ProbeLayer focus={focus} />
+        <CameraRig focus={focus} mapView={mapView} />
       </Suspense>
     </Canvas>
+  );
+}
+
+/** Low-poly inspection probe that slowly circles the focused body. */
+function ProbeLayer({ focus }: { focus: BodyId | null }) {
+  const group = useRef<THREE.Group>(null);
+  const angle = useRef(0);
+
+  useFrame((_, dt) => {
+    const t = Math.min(dt, 0.05);
+    const g = group.current;
+    if (!g) return;
+    const body = BODIES.find((b) => b.id === focus);
+    if (!body) {
+      g.visible = false;
+      return;
+    }
+    g.visible = true;
+    angle.current += t * 0.4;
+    const r = body.orbitRadius + 3.4;
+    g.position.set(
+      Math.cos(angle.current) * r,
+      Math.sin(angle.current * 1.3) * 0.7 + 1.4,
+      Math.sin(angle.current) * r,
+    );
+    g.rotation.y += t * 0.5;
+    g.rotation.z = 0.45;
+  });
+
+  if (!focus) return null;
+
+  return (
+    <group ref={group} scale={0.9}>
+      <mesh>
+        <boxGeometry args={[0.62, 0.34, 0.5]} />
+        <meshStandardMaterial color="#d5dce8" metalness={0.75} roughness={0.35} />
+      </mesh>
+      <mesh position={[0, 0.05, 0.6]}>
+        <cylinderGeometry args={[0.34, 0.5, 0.07, 8]} />
+        <meshStandardMaterial color="#4fd1ff" metalness={0.55} roughness={0.3} />
+      </mesh>
+      <mesh position={[-0.92, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+        <boxGeometry args={[0.58, 1.15, 0.04]} />
+        <meshStandardMaterial color="#1e2a4a" metalness={0.45} roughness={0.5} />
+      </mesh>
+      <mesh position={[0.92, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+        <boxGeometry args={[0.58, 1.15, 0.04]} />
+        <meshStandardMaterial color="#1e2a4a" metalness={0.45} roughness={0.5} />
+      </mesh>
+      <mesh position={[0, 0.1, -0.35]} rotation={[0.5, 0, 0]}>
+        <sphereGeometry args={[0.16, 12, 12]} />
+        <meshStandardMaterial color="#0b1626" metalness={0.6} roughness={0.2} />
+      </mesh>
+    </group>
   );
 }
 

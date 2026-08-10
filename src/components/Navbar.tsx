@@ -1,6 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Github, Moon, Sun, Menu, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { GlobalSearch, SearchTrigger } from "@/components/GlobalSearch";
 import { AmbientAudio } from "@/components/AmbientAudio";
 import { bodyMap } from "@/data/bodies";
@@ -38,18 +38,44 @@ function crumbPath(pathname: string): string[] {
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const [compact, setCompact] = useState(false);
+  const [degraded, setDegraded] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobile, setMobile] = useState(false);
   const [light, setLight] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const routeFailed = useRouterState({ select: (s) => s.matches.some((m) => m.error) });
   const crumbs = crumbPath(pathname);
+  const lastY = useRef(0);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 12);
+    const onScroll = () => {
+      const y = window.scrollY;
+      setScrolled(y > 12);
+      // shrink the bar while scrolling down, restore it on the way back up
+      setCompact(y > 140 && y > lastY.current + 4);
+      lastY.current = y;
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    const onError = () => setDegraded(true);
+    const onReject = () => setDegraded(true);
+    window.addEventListener("error", onError);
+    window.addEventListener("unhandledrejection", onReject);
+    return () => {
+      window.removeEventListener("error", onError);
+      window.removeEventListener("unhandledrejection", onReject);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (degraded) return;
+    if (routeFailed) setDegraded(true);
+  }, [routeFailed, degraded]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -77,7 +103,11 @@ export function Navbar() {
             : "border-b border-transparent"
         }`}
       >
-        <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-6 px-6">
+        <div
+          className={`mx-auto flex max-w-[1600px] items-center gap-6 px-6 transition-all duration-300 ${
+            compact ? "h-12" : "h-16"
+          }`}
+        >
           <Link to="/" className="group flex items-center gap-3">
             <span className="relative flex h-8 w-8 items-center justify-center">
               <span className="absolute inset-0 rounded-lg border border-primary/40" />
@@ -146,7 +176,7 @@ export function Navbar() {
         {/* breadcrumb / system status strip */}
         <div
           className={`hidden overflow-hidden border-t transition-all duration-500 md:block ${
-            scrolled ? "max-h-8 border-border/70" : "max-h-0 border-transparent"
+            scrolled && !compact ? "max-h-8 border-border/70" : "max-h-0 border-transparent"
           }`}
         >
           <div className="mx-auto flex h-8 max-w-[1600px] items-center justify-between px-6">
@@ -165,8 +195,14 @@ export function Navbar() {
               ))}
             </nav>
             <div className="label-tele flex items-center gap-2 text-[9px]">
-              <span className="h-1.5 w-1.5 animate-pulse-ring rounded-full bg-secondary" />
-              All subsystems nominal · Build 4.2.1
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  degraded ? "animate-pulse bg-warning" : "animate-pulse-ring bg-secondary"
+                }`}
+              />
+              {degraded
+                ? "Subsystem degraded · check error report"
+                : "All subsystems nominal · Build 4.2.1"}
             </div>
           </div>
         </div>
