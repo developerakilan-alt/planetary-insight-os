@@ -456,6 +456,18 @@ body::before {
   animation-play-state: paused;
 }
 
+/* Guaranteed keyboard focus indicator for custom controls that do not
+   already opt into a ring utility. */
+a:focus-visible:not([class*="ring-"]),
+button:focus-visible:not([class*="ring-"]),
+[role="button"]:focus-visible:not([class*="ring-"]),
+input:focus-visible:not([class*="ring-"]),
+textarea:focus-visible:not([class*="ring-"]),
+select:focus-visible:not([class*="ring-"]) {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

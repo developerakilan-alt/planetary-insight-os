@@ -14,7 +14,7 @@ import {
   YAxis,
 } from "recharts";
 import { toast } from "sonner";
-import { FileDown, FileSpreadsheet, Printer } from "lucide-react";
+import { ChartColumn, FileDown, FileSpreadsheet, Printer } from "lucide-react";
 import { BODIES, type BodyId } from "@/data/bodies";
 import { SonifyToggle } from "@/components/SonifyToggle";
 import { buildComparisonMarkdown, downloadTextFile } from "@/lib/report";
@@ -192,127 +192,145 @@ function Research() {
         <SonifyToggle label="Sonify gravity" values={sonifyValues} />
       </div>
 
-      <div className="mt-8 grid gap-4 xl:grid-cols-2">
-        <div className="panel p-6">
-          <div className="label-tele mb-6">Surface gravity · m/s²</div>
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={gravity}>
-                <CartesianGrid stroke="var(--border)" vertical={false} />
-                <XAxis dataKey="name" tick={AXIS} axisLine={false} tickLine={false} />
-                <YAxis tick={AXIS} axisLine={false} tickLine={false} />
-                <Tooltip
-                  cursor={{ fill: "color-mix(in oklab, var(--primary) 8%, transparent)" }}
-                  contentStyle={{
-                    background: "var(--popover)",
-                    border: "1px solid var(--border)",
-                    borderRadius: 12,
-                    fontSize: 12,
-                  }}
-                />
-                <Bar dataKey="value" fill="var(--chart-1)" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+      {!bodies.length ? (
+        <div className="panel mt-8 flex flex-col items-center justify-center gap-2 px-6 py-20 text-center">
+          <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-primary/10 text-primary">
+            <ChartColumn className="h-5 w-5" />
+          </span>
+          <div className="mt-2 font-display text-lg font-medium">No bodies selected</div>
+          <p className="max-w-sm text-sm text-muted-foreground">
+            Select one or more bodies above to compare gravity, thermal envelopes, pressure and
+            orbital dynamics across the catalogue.
+          </p>
         </div>
+      ) : (
+        <>
+          <div className="mt-8 grid gap-4 xl:grid-cols-2">
+            <div className="panel p-6">
+              <div className="label-tele mb-6">Surface gravity · m/s²</div>
+              <div className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={gravity}>
+                    <CartesianGrid stroke="var(--border)" vertical={false} />
+                    <XAxis dataKey="name" tick={AXIS} axisLine={false} tickLine={false} />
+                    <YAxis tick={AXIS} axisLine={false} tickLine={false} />
+                    <Tooltip
+                      cursor={{ fill: "color-mix(in oklab, var(--primary) 8%, transparent)" }}
+                      contentStyle={{
+                        background: "var(--popover)",
+                        border: "1px solid var(--border)",
+                        borderRadius: 12,
+                        fontSize: 12,
+                      }}
+                    />
+                    <Bar dataKey="value" fill="var(--chart-1)" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
 
-        <div className="panel p-6">
-          <div className="label-tele mb-6">Thermal envelope · °C</div>
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={temp}>
-                <CartesianGrid stroke="var(--border)" vertical={false} />
-                <XAxis dataKey="name" tick={AXIS} axisLine={false} tickLine={false} />
-                <YAxis tick={AXIS} axisLine={false} tickLine={false} />
-                <Tooltip
-                  cursor={{ fill: "color-mix(in oklab, var(--primary) 8%, transparent)" }}
-                  contentStyle={{
-                    background: "var(--popover)",
-                    border: "1px solid var(--border)",
-                    borderRadius: 12,
-                    fontSize: 12,
-                  }}
-                />
-                <Bar dataKey="min" fill="var(--chart-1)" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="max" fill="var(--chart-4)" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="panel p-6">
+              <div className="label-tele mb-6">Thermal envelope · °C</div>
+              <div className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={temp}>
+                    <CartesianGrid stroke="var(--border)" vertical={false} />
+                    <XAxis dataKey="name" tick={AXIS} axisLine={false} tickLine={false} />
+                    <YAxis tick={AXIS} axisLine={false} tickLine={false} />
+                    <Tooltip
+                      cursor={{ fill: "color-mix(in oklab, var(--primary) 8%, transparent)" }}
+                      contentStyle={{
+                        background: "var(--popover)",
+                        border: "1px solid var(--border)",
+                        borderRadius: 12,
+                        fontSize: 12,
+                      }}
+                    />
+                    <Bar dataKey="min" fill="var(--chart-1)" radius={[6, 6, 0, 0]} />
+                    <Bar dataKey="max" fill="var(--chart-4)" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="panel p-6 xl:col-span-2">
+              <div className="label-tele mb-6">Normalised parameter profile</div>
+              <div className="h-96">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadarChart data={radar}>
+                    <PolarGrid stroke="var(--border)" />
+                    <PolarAngleAxis dataKey="axis" tick={AXIS} />
+                    {bodies.map((b, i) => (
+                      <Radar
+                        key={b.id}
+                        dataKey={b.name}
+                        stroke={colors[i % colors.length]}
+                        fill={colors[i % colors.length]}
+                        fillOpacity={0.12}
+                      />
+                    ))}
+                    <Tooltip
+                      contentStyle={{
+                        background: "var(--popover)",
+                        border: "1px solid var(--border)",
+                        borderRadius: 12,
+                        fontSize: 12,
+                      }}
+                    />
+                  </RadarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div className="panel p-6 xl:col-span-2">
-          <div className="label-tele mb-6">Normalised parameter profile</div>
-          <div className="h-96">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadarChart data={radar}>
-                <PolarGrid stroke="var(--border)" />
-                <PolarAngleAxis dataKey="axis" tick={AXIS} />
-                {bodies.map((b, i) => (
-                  <Radar
-                    key={b.id}
-                    dataKey={b.name}
-                    stroke={colors[i % colors.length]}
-                    fill={colors[i % colors.length]}
-                    fillOpacity={0.12}
-                  />
+          <div className="panel mt-4 overflow-x-auto">
+            <table className="w-full min-w-[900px] text-sm">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="label-tele p-4 text-left">Parameter</th>
+                  {bodies.map((b) => (
+                    <th key={b.id} className="p-4 text-left font-medium">
+                      {b.name}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {(
+                  [
+                    [
+                      "Radius (km)",
+                      (b: (typeof BODIES)[number]) => b.metrics.radiusKm.toLocaleString(),
+                    ],
+                    ["Gravity (m/s²)", (b: (typeof BODIES)[number]) => String(b.metrics.gravity)],
+                    [
+                      "Pressure (bar)",
+                      (b: (typeof BODIES)[number]) => String(b.metrics.pressureBar),
+                    ],
+                    ["Atmosphere", (b: (typeof BODIES)[number]) => b.metrics.atmosphere],
+                    ["Water", (b: (typeof BODIES)[number]) => b.metrics.water],
+                    [
+                      "Escape velocity (km/s)",
+                      (b: (typeof BODIES)[number]) => String(b.metrics.escapeVelocity),
+                    ],
+                    ["Magnetic field", (b: (typeof BODIES)[number]) => b.metrics.magneticField],
+                    ["Orbital period", (b: (typeof BODIES)[number]) => b.metrics.orbitalPeriod],
+                  ] as const
+                ).map(([label, fn]) => (
+                  <tr key={label} className="border-b border-border last:border-0">
+                    <td className="label-tele p-4">{label}</td>
+                    {bodies.map((b) => (
+                      <td key={b.id} className="p-4 text-muted-foreground">
+                        {fn(b)}
+                      </td>
+                    ))}
+                  </tr>
                 ))}
-                <Tooltip
-                  contentStyle={{
-                    background: "var(--popover)",
-                    border: "1px solid var(--border)",
-                    borderRadius: 12,
-                    fontSize: 12,
-                  }}
-                />
-              </RadarChart>
-            </ResponsiveContainer>
+              </tbody>
+            </table>
           </div>
-        </div>
-      </div>
-
-      <div className="panel mt-4 overflow-x-auto">
-        <table className="w-full min-w-[900px] text-sm">
-          <thead>
-            <tr className="border-b border-border">
-              <th className="label-tele p-4 text-left">Parameter</th>
-              {bodies.map((b) => (
-                <th key={b.id} className="p-4 text-left font-medium">
-                  {b.name}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {(
-              [
-                [
-                  "Radius (km)",
-                  (b: (typeof BODIES)[number]) => b.metrics.radiusKm.toLocaleString(),
-                ],
-                ["Gravity (m/s²)", (b: (typeof BODIES)[number]) => String(b.metrics.gravity)],
-                ["Pressure (bar)", (b: (typeof BODIES)[number]) => String(b.metrics.pressureBar)],
-                ["Atmosphere", (b: (typeof BODIES)[number]) => b.metrics.atmosphere],
-                ["Water", (b: (typeof BODIES)[number]) => b.metrics.water],
-                [
-                  "Escape velocity (km/s)",
-                  (b: (typeof BODIES)[number]) => String(b.metrics.escapeVelocity),
-                ],
-                ["Magnetic field", (b: (typeof BODIES)[number]) => b.metrics.magneticField],
-                ["Orbital period", (b: (typeof BODIES)[number]) => b.metrics.orbitalPeriod],
-              ] as const
-            ).map(([label, fn]) => (
-              <tr key={label} className="border-b border-border last:border-0">
-                <td className="label-tele p-4">{label}</td>
-                {bodies.map((b) => (
-                  <td key={b.id} className="p-4 text-muted-foreground">
-                    {fn(b)}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+        </>
+      )}
     </div>
   );
 }
