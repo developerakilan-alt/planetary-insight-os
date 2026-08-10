@@ -368,6 +368,15 @@
   }
 }
 
+@keyframes ticker {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 @keyframes warp {
   0% {
     opacity: 0;
@@ -437,6 +446,14 @@ body::before {
   .cursor-glow {
     display: none;
   }
+}
+
+.ticker-track {
+  animation: ticker 45s linear infinite;
+}
+
+.ticker-track:hover {
+  animation-play-state: paused;
 }
 
 @media (prefers-reduced-motion: reduce) {

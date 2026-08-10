@@ -10,6 +10,7 @@ import { Magnetic } from "@/components/motion/Magnetic";
 import { CountUp } from "@/components/motion/CountUp";
 import { Reveal } from "@/components/motion/Reveal";
 import { bodyMap, type BodyId } from "@/data/bodies";
+import { MISSIONS } from "@/data/missions";
 
 const HeroScene = lazy(() => import("@/components/three/HeroScene"));
 
@@ -123,6 +124,36 @@ function Landing() {
             </div>
           </motion.div>
 
+          {/* live target readout */}
+          <div className="pointer-events-auto absolute right-6 top-1/2 z-10 hidden w-64 -translate-y-1/2 xl:block">
+            <div className="panel p-5">
+              <div className="label-tele flex items-center justify-between">
+                <span>Target readout</span>
+                <span className="text-primary">{body.designation}</span>
+              </div>
+              <div className="mt-1 font-display text-2xl font-semibold">{body.name}</div>
+              <dl className="mt-4 space-y-2.5">
+                <ReadoutRow label="Radius" value={`${body.metrics.radiusKm.toLocaleString()} km`} />
+                <ReadoutRow label="Gravity" value={`${body.metrics.gravity} m/s²`} />
+                <ReadoutRow
+                  label="Surface T"
+                  value={`${body.metrics.tempC[0]}…${body.metrics.tempC[1]} °C`}
+                />
+                <ReadoutRow label="Pressure" value={`${body.metrics.pressureBar} bar`} />
+              </dl>
+              <div className="mt-4 border-t border-border pt-3">
+                <Link
+                  to="/explorer/$body"
+                  params={{ body: body.id }}
+                  className="label-tele flex items-center justify-between text-[9px] text-primary hover:underline"
+                >
+                  <span className="text-muted-foreground">AI analysis</span>
+                  <span>OPEN INSTRUMENT →</span>
+                </Link>
+              </div>
+            </div>
+          </div>
+
           {/* live telemetry rail */}
           <div className="absolute inset-x-0 bottom-0 z-10 border-t border-border bg-background/50 backdrop-blur-xl">
             <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-x-10 gap-y-3 px-6 py-4">
@@ -153,8 +184,38 @@ function Landing() {
         </div>
       </div>
 
+      <MissionTicker />
       <Capabilities />
     </>
+  );
+}
+
+function ReadoutRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3 border-b border-border pb-2.5 last:border-0 last:pb-0">
+      <span className="label-tele">{label}</span>
+      <span className="font-mono text-xs tabular-nums">{value}</span>
+    </div>
+  );
+}
+
+function MissionTicker() {
+  const strip = MISSIONS.map((m) => `${m.name} · ${m.agency} · ${m.year}`);
+  return (
+    <div className="relative z-10 border-b border-border bg-card/40 backdrop-blur-sm">
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-28 bg-gradient-to-r from-background to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-28 bg-gradient-to-l from-background to-transparent" />
+      <div className="overflow-hidden py-3">
+        <div className="ticker-track flex w-max items-center gap-10 whitespace-nowrap">
+          {[...strip, ...strip].map((s, i) => (
+            <span key={i} className="flex items-center gap-10">
+              <span className="label-tele">{s}</span>
+              <span className="h-1 w-1 rounded-full bg-border-strong" />
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -200,7 +261,10 @@ function Capabilities() {
     <section className="relative z-10 border-t border-border bg-background">
       <div className="mx-auto max-w-[1600px] px-6 py-28">
         <div className="max-w-2xl">
-          <div className="label-tele">Platform capabilities</div>
+          <div className="flex items-center gap-3">
+            <span className="label-tele text-primary">01</span>
+            <span className="label-tele">Capabilities</span>
+          </div>
           <h2 className="mt-4 text-[clamp(1.7rem,3.4vw,2.8rem)] font-semibold leading-[1.05]">
             One console for exploration, analysis and mission planning.
           </h2>
@@ -217,8 +281,11 @@ function Capabilities() {
                 <Link
                   to={c.to}
                   {...("params" in c ? { params: c.params } : {})}
-                  className="panel lift block h-full p-6"
+                  className="panel lift relative block h-full p-6"
                 >
+                  <span className="label-tele absolute right-6 top-6 text-[10px] text-muted-foreground">
+                    0{i + 1}
+                  </span>
                   <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-primary/10 text-primary">
                     <c.icon className="h-5 w-5" />
                   </span>
@@ -233,7 +300,12 @@ function Capabilities() {
           ))}
         </div>
 
-        <div className="mt-24 grid gap-4 lg:grid-cols-3">
+        <div className="mt-20 flex items-center gap-3">
+          <span className="label-tele text-primary">02</span>
+          <span className="label-tele">Instrument coverage</span>
+        </div>
+
+        <div className="mt-6 grid gap-4 lg:grid-cols-3">
           {(
             [
               [9, "Bodies modelled", "Terrestrial planets, ocean worlds and icy moons"],
