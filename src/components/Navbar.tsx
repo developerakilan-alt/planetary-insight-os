@@ -3,6 +3,7 @@ import { Github, Moon, Sun, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { GlobalSearch, SearchTrigger } from "@/components/GlobalSearch";
 import { AmbientAudio } from "@/components/AmbientAudio";
+import { bodyMap } from "@/data/bodies";
 
 const NAV = [
   { to: "/", label: "Home" },
@@ -13,7 +14,27 @@ const NAV = [
   { to: "/copilot", label: "AI Copilot" },
   { to: "/gallery", label: "Gallery" },
   { to: "/about", label: "About" },
-];
+] as const;
+
+/** Map a route path to breadcrumb segments, e.g. /explorer/mars → SYSTEM / EXPLORER / MARS. */
+function crumbPath(pathname: string): string[] {
+  const parts = pathname.split("/").filter(Boolean);
+  if (parts.length === 0) return ["SYSTEM", "OVERVIEW"];
+  if (parts[0] === "explorer") {
+    if (parts[1]) {
+      const body = bodyMap[parts[1] as keyof typeof bodyMap];
+      return ["SYSTEM", "EXPLORER", body?.name.toUpperCase() ?? "BODY"];
+    }
+    return ["SYSTEM", "EXPLORER"];
+  }
+  const label =
+    parts[0] === "ar"
+      ? "FLIGHT OPS"
+      : parts[0] === "copilot"
+        ? "AI COPILOT"
+        : (parts[0] ?? "OVERVIEW").toUpperCase();
+  return ["SYSTEM", label];
+}
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -21,6 +42,7 @@ export function Navbar() {
   const [mobile, setMobile] = useState(false);
   const [light, setLight] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const crumbs = crumbPath(pathname);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -51,7 +73,7 @@ export function Navbar() {
       <header
         className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
           scrolled
-            ? "border-b border-border bg-background/70 backdrop-blur-xl"
+            ? "border-b border-border bg-background/80 backdrop-blur-xl"
             : "border-b border-transparent"
         }`}
       >
@@ -73,7 +95,7 @@ export function Navbar() {
                 key={item.to}
                 to={item.to}
                 activeOptions={{ exact: item.to === "/" }}
-                className="rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-card/60 hover:text-foreground data-[status=active]:bg-card/80 data-[status=active]:text-foreground"
+                className="relative rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground after:absolute after:inset-x-2 after:-bottom-0.5 after:h-px after:bg-primary after:opacity-0 after:transition-opacity after:content-[''] data-[status=active]:text-foreground data-[status=active]:after:opacity-100"
               >
                 {item.label}
               </Link>
@@ -118,6 +140,34 @@ export function Navbar() {
             >
               {mobile ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </button>
+          </div>
+        </div>
+
+        {/* breadcrumb / system status strip */}
+        <div
+          className={`hidden overflow-hidden border-t transition-all duration-500 md:block ${
+            scrolled ? "max-h-8 border-border/70" : "max-h-0 border-transparent"
+          }`}
+        >
+          <div className="mx-auto flex h-8 max-w-[1600px] items-center justify-between px-6">
+            <nav aria-label="Breadcrumb" className="flex items-center gap-1.5">
+              {crumbs.map((c, i) => (
+                <span key={c} className="flex items-center gap-1.5">
+                  <span
+                    className={`label-tele text-[9px] ${
+                      i === crumbs.length - 1 ? "text-primary" : "text-muted-foreground/70"
+                    }`}
+                  >
+                    {c}
+                  </span>
+                  {i < crumbs.length - 1 && <span className="text-muted-foreground/40">/</span>}
+                </span>
+              ))}
+            </nav>
+            <div className="label-tele flex items-center gap-2 text-[9px]">
+              <span className="h-1.5 w-1.5 animate-pulse-ring rounded-full bg-secondary" />
+              All subsystems nominal · Build 4.2.1
+            </div>
           </div>
         </div>
 
