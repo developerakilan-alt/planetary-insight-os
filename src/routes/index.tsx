@@ -85,7 +85,7 @@ function Landing() {
                 <span className="h-1.5 w-1.5 animate-pulse-ring rounded-full bg-secondary" />
                 Planetary Intelligence · Build 4.2.1
               </div>
-              <h1 className="text-gradient font-display text-[clamp(3.5rem,11vw,10rem)] font-semibold leading-[0.9] tracking-[-0.05em]">
+              <h1 className="text-gradient font-display text-[clamp(2.9rem,8.5vw,8rem)] font-semibold leading-[0.9] tracking-[-0.05em]">
                 COSMOS OS
               </h1>
               <p className="mx-auto mt-6 max-w-xl text-balance text-base text-muted-foreground sm:text-lg">
@@ -201,7 +201,7 @@ function Capabilities() {
       <div className="mx-auto max-w-[1600px] px-6 py-28">
         <div className="max-w-2xl">
           <div className="label-tele">Platform capabilities</div>
-          <h2 className="mt-4 text-[clamp(2rem,4vw,3.25rem)] font-semibold leading-[1.05]">
+          <h2 className="mt-4 text-[clamp(1.7rem,3.4vw,2.8rem)] font-semibold leading-[1.05]">
             One console for exploration, analysis and mission planning.
           </h2>
           <p className="mt-5 text-muted-foreground">

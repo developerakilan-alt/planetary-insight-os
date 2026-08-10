@@ -25,12 +25,12 @@ export function HeroHud() {
 
       {/* orbit guide ellipse */}
       <div
-        className="absolute left-1/2 top-[45%] h-[46vh] w-[130vw] -translate-x-1/2 -translate-y-1/2 rounded-[50%] border border-primary/10"
+        className="absolute left-1/2 top-[45%] h-[40vh] w-[115vw] -translate-x-1/2 -translate-y-1/2 rounded-[50%] border border-primary/10"
         style={{ transform: "translate(-50%, -50%) rotate(-6deg)" }}
       />
 
       {/* rotating HUD instrument ring */}
-      <div className="absolute left-1/2 top-[45%] h-[74vh] w-[74vh] -translate-x-1/2 -translate-y-1/2">
+      <div className="absolute left-1/2 top-[45%] h-[62vh] w-[62vh] -translate-x-1/2 -translate-y-1/2">
         <div className="absolute inset-0 rounded-full border border-primary/15" />
         <div
           className="absolute inset-3 rounded-full"

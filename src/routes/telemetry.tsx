@@ -203,7 +203,7 @@ function Telemetry() {
       <div className="label-tele flex items-center gap-2">
         <Activity className="h-3.5 w-3.5 text-primary" /> Live telemetry
       </div>
-      <h1 className="mt-3 text-[clamp(2rem,4vw,3.25rem)] font-semibold">
+      <h1 className="mt-3 text-[clamp(1.75rem,3.4vw,2.85rem)] font-semibold">
         Flight operations console
       </h1>
       <p className="mt-4 max-w-2xl text-muted-foreground">

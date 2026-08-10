@@ -50,7 +50,7 @@ function Missions() {
   return (
     <div className="mx-auto max-w-[1600px] px-6 pb-24 pt-10">
       <div className="label-tele">Mission archive</div>
-      <h1 className="mt-3 text-[clamp(2rem,4vw,3.25rem)] font-semibold">
+      <h1 className="mt-3 text-[clamp(1.75rem,3.4vw,2.85rem)] font-semibold">
         Six decades of planetary operations
       </h1>
       <p className="mt-4 max-w-2xl text-muted-foreground">

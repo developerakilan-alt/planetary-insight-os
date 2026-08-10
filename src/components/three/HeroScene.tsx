@@ -41,7 +41,7 @@ function Rig({ bodyId }: { bodyId: BodyId }) {
 
   return (
     <group ref={group}>
-      <Planet key={shown} body={body} scale={2.35} options={{ quality: "high" }} />
+      <Planet key={shown} body={body} scale={2.1} options={{ quality: "high" }} />
     </group>
   );
 }
@@ -50,7 +50,7 @@ export default function HeroScene({ bodyId }: { bodyId: BodyId }) {
   return (
     <Canvas
       dpr={[1, 1.75]}
-      camera={{ position: [0, 0, 7.2], fov: 42 }}
+      camera={{ position: [0, 0, 7.8], fov: 40 }}
       gl={{ antialias: true, alpha: true }}
       style={{ position: "absolute", inset: 0 }}
     >

@@ -114,7 +114,9 @@ function Research() {
   return (
     <div className="print-report mx-auto max-w-[1600px] px-6 pb-24 pt-10">
       <div className="label-tele">Research console</div>
-      <h1 className="mt-3 text-[clamp(2rem,4vw,3.25rem)] font-semibold">Comparative planetology</h1>
+      <h1 className="mt-3 text-[clamp(1.75rem,3.4vw,2.85rem)] font-semibold">
+        Comparative planetology
+      </h1>
       <p className="mt-4 max-w-2xl text-muted-foreground">
         Select up to five bodies to compare physical, thermal and atmospheric parameters.
       </p>

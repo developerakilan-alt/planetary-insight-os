@@ -26,7 +26,7 @@ function Copilot() {
   return (
     <div className="mx-auto max-w-[1100px] px-6 pb-24 pt-10">
       <div className="label-tele">Analysis engine</div>
-      <h1 className="mt-3 text-[clamp(2rem,4vw,3.25rem)] font-semibold">AI Scientist</h1>
+      <h1 className="mt-3 text-[clamp(1.75rem,3.4vw,2.85rem)] font-semibold">AI Scientist</h1>
       <p className="mt-4 max-w-2xl text-muted-foreground">
         A planetary science analyst trained on mission literature. Ask about geology, atmospheres,
         habitability or exploration architecture.

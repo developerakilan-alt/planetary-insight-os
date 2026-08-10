@@ -180,6 +180,9 @@
   }
 
   html {
+    /* Global scale: lower for a more "zoomed out" instrument layout.
+       All Tailwind sizing (rem) scales off this value. */
+    font-size: 15px;
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
   }
