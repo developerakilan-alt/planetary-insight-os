@@ -146,7 +146,7 @@ function Explorer() {
           className={`flex items-center gap-2 rounded-full border px-3 py-2 text-xs transition-colors ${
             mapView
               ? "border-primary/40 bg-primary/15 text-primary"
-              : "border-border bg-background/70 text-muted-foreground backdrop-blur hover:text-foreground"
+              : "glass-chip text-muted-foreground hover:text-foreground"
           }`}
         >
           <MapIcon className="h-3.5 w-3.5" />
@@ -168,7 +168,7 @@ function Explorer() {
               className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-colors ${
                 epoch
                   ? "border-primary/40 bg-primary/15 text-primary"
-                  : "border-border text-muted-foreground hover:text-foreground"
+                  : "glass-chip text-muted-foreground hover:text-foreground"
               }`}
             >
               <Play className="h-3 w-3" />
@@ -203,14 +203,14 @@ function Explorer() {
                   onChange={(e) => {
                     if (e.target.value) setEpoch(new Date(`${e.target.value}T12:00:00`));
                   }}
-                  className="rounded-md border border-border bg-background px-2.5 py-1.5 font-mono text-xs text-foreground outline-none focus:border-primary"
+                  className="rounded-md border border-glass-edge bg-glass-fill px-2.5 py-1.5 font-mono text-xs text-foreground outline-none focus:border-primary"
                 />
                 <button
                   onClick={() => {
                     setEpoch(new Date());
                     setPlaying(false);
                   }}
-                  className="rounded-full border border-border px-2.5 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                  className="glass-chip rounded-full px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground"
                 >
                   Now
                 </button>
@@ -241,7 +241,7 @@ function Explorer() {
                   className={`flex w-full items-center gap-2 rounded-md border px-2 py-1.5 text-left text-[10px] transition-colors ${
                     showSpacecraft
                       ? "border-primary/40 bg-primary/10 text-foreground"
-                      : "border-border text-muted-foreground hover:text-foreground"
+                      : "border-glass-edge bg-glass-fill text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   <Satellite className={`h-3.5 w-3.5 ${showSpacecraft ? "text-primary" : ""}`} />
@@ -275,7 +275,7 @@ function Explorer() {
               onMouseEnter={() => setFocus(b.id)}
               onMouseLeave={() => setFocus(null)}
               onClick={() => open(b.id)}
-              className="group min-w-40 flex-1 rounded-xl border border-transparent px-4 py-3 text-left transition-all hover:border-border-strong hover:bg-card/60"
+              className="group min-w-40 flex-1 rounded-xl border border-transparent px-4 py-3 text-left transition-all hover:border-glass-edge-strong hover:bg-glass-fill-strong"
             >
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">{b.name}</span>

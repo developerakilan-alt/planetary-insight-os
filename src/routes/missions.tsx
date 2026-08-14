@@ -52,7 +52,11 @@ function Missions() {
     <div className="mx-auto max-w-[1600px] px-6 pb-24 pt-10">
       <PageMasthead
         eyebrow="Mission archive"
-        title="Six decades of planetary operations"
+        title={
+          <>
+            Six decades of <em className="text-editorial">planetary operations.</em>
+          </>
+        }
         description="Select a mission to inspect its target, landing coordinates, surface traverse and the science it returned."
         meta={[
           { label: "Missions", value: String(MISSIONS.length) },
@@ -156,7 +160,7 @@ function Missions() {
                 {active.traverse.points.map((p, i) => (
                   <span
                     key={i}
-                    className="label-tele rounded-full border border-border bg-background/60 px-2 py-1 text-[9px]"
+                    className="label-tele rounded-full border border-glass-edge bg-glass-fill px-2 py-1 text-[9px] backdrop-blur-xl"
                   >
                     {i === 0 ? "landing" : `WP${i}`} · {p.lat.toFixed(2)}°, {p.lon.toFixed(2)}°
                   </span>

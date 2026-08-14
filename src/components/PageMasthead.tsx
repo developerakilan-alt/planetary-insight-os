@@ -6,9 +6,10 @@ export interface MastheadMeta {
 }
 
 /**
- * Standard page masthead used by every route: eyebrow + title + description,
- * with an optional meta strip and action slot. Keeps all pages on the same
- * professional "operations console" grid.
+ * Standard page masthead used by every route. Cinematic editorial treatment:
+ * monospaced eyebrow, large display title with an optional serif flourish,
+ * description, and a translucent glass meta strip. Keeps all pages on the same
+ * premium "operations console" grid.
  */
 export function PageMasthead({
   eyebrow,
@@ -26,28 +27,36 @@ export function PageMasthead({
   actions?: ReactNode;
 }) {
   return (
-    <header className="border-b border-border pb-8">
-      <div className="flex flex-wrap items-start justify-between gap-6">
+    <header className="relative overflow-hidden border-b border-glass-edge pb-10">
+      <div className="leak-warm pointer-events-none absolute -top-24 right-0 h-72 w-full opacity-50" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+
+      <div className="relative flex flex-wrap items-start justify-between gap-6">
         <div className="max-w-3xl">
           <div className="label-tele flex items-center gap-2 text-primary">
             <span className="text-muted-foreground/50">/</span>
             {icon && <span className="shrink-0">{icon}</span>}
             <span>{eyebrow}</span>
           </div>
-          <h1 className="mt-3 text-[clamp(1.9rem,3.6vw,3rem)] font-semibold tracking-[-0.02em]">
+          <h1 className="mt-4 text-[clamp(2.1rem,4.2vw,3.6rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
             {title}
           </h1>
           {description && (
-            <p className="mt-4 max-w-2xl leading-relaxed text-muted-foreground">{description}</p>
+            <p className="mt-5 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
+              {description}
+            </p>
           )}
         </div>
         {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
       </div>
 
       {meta.length > 0 && (
-        <div className="mt-8 grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-9 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
           {meta.map((m) => (
-            <div key={m.label} className="bg-surface px-4 py-3">
+            <div
+              key={m.label}
+              className="rounded-2xl border border-glass-edge bg-glass-fill px-4 py-3 backdrop-blur-xl"
+            >
               <div className="label-tele text-[9px]">{m.label}</div>
               <div className="mt-1 truncate font-mono text-sm tabular-nums text-foreground">
                 {m.value}

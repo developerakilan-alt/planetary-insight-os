@@ -143,7 +143,11 @@ function Research() {
     <div className="print-report mx-auto max-w-[1600px] px-6 pb-24 pt-10">
       <PageMasthead
         eyebrow="Research console"
-        title="Comparative planetology"
+        title={
+          <>
+            Comparative <em className="text-editorial">planetology.</em>
+          </>
+        }
         description="Select up to five bodies to compare physical, thermal and atmospheric parameters."
         meta={[
           { label: "Catalogue", value: "14 bodies" },
@@ -162,7 +166,7 @@ function Research() {
             className={`rounded-full border px-4 py-2 text-sm transition-colors ${
               selected.includes(b.id)
                 ? "border-primary/50 bg-primary/15 text-primary"
-                : "border-border text-muted-foreground hover:text-foreground"
+                : "glass-chip text-muted-foreground hover:text-foreground"
             }`}
           >
             {b.name}
@@ -179,13 +183,13 @@ function Research() {
         </button>
         <button
           onClick={printReport}
-          className="flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="glass-chip flex items-center gap-2 rounded-full px-4 py-2 text-sm text-muted-foreground hover:text-foreground"
         >
           <Printer className="h-4 w-4" /> Print / PDF
         </button>
         <button
           onClick={downloadCsv}
-          className="flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="glass-chip flex items-center gap-2 rounded-full px-4 py-2 text-sm text-muted-foreground hover:text-foreground"
         >
           <FileSpreadsheet className="h-4 w-4" /> Export CSV
         </button>

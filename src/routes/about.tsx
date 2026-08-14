@@ -46,7 +46,11 @@ function About() {
     <div className="mx-auto max-w-[1100px] px-6 pb-24 pt-10">
       <PageMasthead
         eyebrow="Platform"
-        title="Built like mission software"
+        title={
+          <>
+            Built like <em className="text-editorial">mission software.</em>
+          </>
+        }
         description="Cosmos OS is a research console, not a website. It is designed for planetary scientists, mission planners and students who need to reason about worlds quickly."
         meta={[
           { label: "Build", value: "4.2.1" },

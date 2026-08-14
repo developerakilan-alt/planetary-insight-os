@@ -17,8 +17,10 @@ const RESOURCES = [
 
 export function Footer() {
   return (
-    <footer className="relative z-10 border-t border-border bg-background/80">
-      <div className="mx-auto max-w-[1600px] px-6 py-14">
+    <footer className="relative z-10 overflow-hidden border-t border-glass-edge">
+      <div className="leak-warm pointer-events-none absolute inset-0 opacity-40" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+      <div className="relative mx-auto max-w-[1600px] px-6 py-16">
         <div className="grid gap-10 md:grid-cols-12">
           <div className="md:col-span-5">
             <div className="font-display text-sm font-semibold tracking-[0.2em]">COSMOS OS</div>
@@ -26,9 +28,12 @@ export function Footer() {
               An AI-assisted planetary intelligence platform for mission planning, terrain analysis
               and comparative planetology.
             </p>
+            <p className="text-editorial mt-5 max-w-sm text-xl">
+              Every world, rendered as mission software would render it.
+            </p>
             <div className="label-tele mt-6 flex items-center gap-2 text-[9px]">
               <span className="h-1.5 w-1.5 animate-pulse-ring rounded-full bg-secondary" />
-              All subsystems nominal · Build 4.2.1
+              All subsystems nominal · Build 4.3.0
             </div>
           </div>
 
@@ -76,7 +81,7 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="border-t border-border px-6 py-5">
+      <div className="relative border-t border-glass-edge px-6 py-5">
         <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-3">
           <p className="label-tele text-[9px]">© 2026 Cosmos OS — Research preview</p>
           <p className="label-tele text-[9px]">

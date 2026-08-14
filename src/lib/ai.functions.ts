@@ -43,8 +43,14 @@ export async function gatewayRequest(
   messages: GatewayMessage[],
   fetcher: typeof fetch = fetch,
 ): Promise<GatewayOutcome> {
-  const key = process.env["LOVABLE_API_KEY"];
-  if (!key) return { status: "error", message: "AI gateway is not configured." };
+  const key = process.env["LOVABLE_API_KEY"] || import.meta.env["LOVABLE_API_KEY"];
+  if (!key) {
+    return {
+      status: "error",
+      message:
+        "AI gateway is not configured. Set the LOVABLE_API_KEY environment variable (for local dev, add it to a .env.local file in the project root) or run the app from the Lovable preview.",
+    };
+  }
 
   let lastError = "";
   for (const model of MODELS) {

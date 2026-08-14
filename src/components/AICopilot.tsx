@@ -106,7 +106,7 @@ export function ChatPanel({ context, compact = false }: { context?: string; comp
                 <button
                   key={s}
                   onClick={() => submit(s)}
-                  className="rounded-lg border border-border bg-card/40 px-3 py-2 text-left text-sm text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground"
+                  className="rounded-lg border border-glass-edge bg-glass-fill px-3 py-2 text-left text-sm text-muted-foreground transition-colors hover:border-glass-edge-strong hover:text-foreground"
                 >
                   {s}
                 </button>
@@ -125,7 +125,7 @@ export function ChatPanel({ context, compact = false }: { context?: string; comp
           ) : (
             <div
               key={i}
-              className="rounded-2xl rounded-bl-sm border border-border bg-card/50 px-4 py-3"
+              className="rounded-2xl rounded-bl-sm border border-glass-edge bg-glass-fill px-4 py-3"
             >
               <AnswerBody text={m.content} />
             </div>
@@ -148,7 +148,7 @@ export function ChatPanel({ context, compact = false }: { context?: string; comp
         }}
         className="border-t border-border p-3"
       >
-        <div className="flex items-center gap-2 rounded-xl border border-border bg-background/60 px-3">
+        <div className="flex items-center gap-2 rounded-xl border border-glass-edge bg-glass-fill px-3">
           <input
             value={value}
             onChange={(e) => setValue(e.target.value)}
@@ -207,7 +207,7 @@ export function AICopilot() {
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label="Open the AI Scientist assistant"
-        className="fixed bottom-6 right-6 z-50 flex h-14 items-center gap-3 rounded-full border border-border-strong bg-card/80 px-5 backdrop-blur-xl transition-transform hover:scale-[1.03]"
+        className="fixed bottom-6 right-6 z-50 flex h-14 items-center gap-3 rounded-full border border-glass-edge-strong bg-glass-fill-strong px-5 backdrop-blur-2xl transition-transform hover:scale-[1.03]"
         style={{ boxShadow: "var(--shadow-glow)" }}
       >
         <span className="relative flex h-7 w-7 items-center justify-center">

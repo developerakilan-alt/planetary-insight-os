@@ -193,7 +193,11 @@ function Gallery() {
       <PageMasthead
         eyebrow="Imaging library"
         icon={<Satellite className="h-3.5 w-3.5" />}
-        title="Surface observation archive"
+        title={
+          <>
+            Surface observation <em className="text-editorial">archive.</em>
+          </>
+        }
         description="Live imagery pulled from the NASA Image and Video Library. Filter by body, mission, spacecraft or year, and hover any image to ask the AI imaging analyst for a scientific caption."
         meta={[
           { label: "Source", value: "NASA image library" },
@@ -281,7 +285,7 @@ function Gallery() {
             )}
             <div className="absolute inset-0 bg-[linear-gradient(to_top,var(--background),transparent_65%)]" />
             {item.source === "nasa" && (
-              <span className="label-tele absolute right-3 top-3 rounded-full border border-border bg-background/80 px-2 py-1 text-[9px] text-foreground backdrop-blur">
+              <span className="label-tele absolute right-3 top-3 rounded-full border border-glass-edge bg-background/40 px-2 py-1 text-[9px] text-foreground backdrop-blur-2xl">
                 NASA
               </span>
             )}
@@ -289,7 +293,7 @@ function Gallery() {
               onClick={() => generateCaption(item)}
               disabled={!!pendingCaption && pendingCaption !== item.id}
               aria-label={`Generate an AI scientific caption for ${item.title}`}
-              className="absolute left-3 top-3 flex h-8 items-center gap-1.5 rounded-full border border-border bg-background/80 px-2.5 text-[10px] text-primary opacity-0 backdrop-blur transition-all duration-300 hover:border-primary/50 hover:bg-primary/15 group-hover:opacity-100 focus-visible:opacity-100 disabled:cursor-default disabled:opacity-70"
+              className="absolute left-3 top-3 flex h-8 items-center gap-1.5 rounded-full border border-glass-edge bg-background/40 px-2.5 text-[10px] text-primary opacity-0 backdrop-blur-2xl transition-all duration-300 hover:border-primary/50 hover:bg-primary/15 group-hover:opacity-100 focus-visible:opacity-100 disabled:cursor-default disabled:opacity-70"
             >
               {pendingCaption === item.id ? (
                 <Loader2 className="h-3 w-3 animate-spin" />

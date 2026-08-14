@@ -141,7 +141,7 @@ function FlightOps() {
 
       {/* heading tape */}
       <div className="pointer-events-none absolute inset-x-0 bottom-16 flex justify-center">
-        <div className="flex items-center gap-2 rounded-full border border-border bg-background/80 px-4 py-2 backdrop-blur-xl">
+        <div className="flex items-center gap-2 rounded-full border border-glass-edge bg-background/40 px-4 py-2 backdrop-blur-2xl">
           <Compass className="h-4 w-4 text-primary" />
           <span className="font-mono text-sm tabular-nums">{Math.round(viewAz)}°</span>
           <span className="label-tele">heading</span>

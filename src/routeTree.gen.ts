@@ -12,12 +12,22 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as ArRouteImport } from './routes/ar'
+import { Route as ColonyRouteImport } from './routes/colony'
+import { Route as CommandRouteImport } from './routes/command'
 import { Route as CopilotRouteImport } from './routes/copilot'
+import { Route as EventsRouteImport } from './routes/events'
+import { Route as ExoplanetsRouteImport } from './routes/exoplanets'
 import { Route as ExplorerRouteImport } from './routes/explorer'
 import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as MissionsRouteImport } from './routes/missions'
+import { Route as NeoRouteImport } from './routes/neo'
+import { Route as NotebookRouteImport } from './routes/notebook'
 import { Route as ResearchRouteImport } from './routes/research'
+import { Route as SatellitesRouteImport } from './routes/satellites'
+import { Route as ScaleRouteImport } from './routes/scale'
 import { Route as TelemetryRouteImport } from './routes/telemetry'
+import { Route as TimemachineRouteImport } from './routes/timemachine'
+import { Route as WeatherRouteImport } from './routes/weather'
 import { Route as ExplorerIndexRouteImport } from './routes/explorer.index'
 import { Route as ExplorerBodyRouteImport } from './routes/explorer.$body'
 
@@ -36,9 +46,29 @@ const ArRoute = ArRouteImport.update({
   path: '/ar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ColonyRoute = ColonyRouteImport.update({
+  id: '/colony',
+  path: '/colony',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CommandRoute = CommandRouteImport.update({
+  id: '/command',
+  path: '/command',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CopilotRoute = CopilotRouteImport.update({
   id: '/copilot',
   path: '/copilot',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EventsRoute = EventsRouteImport.update({
+  id: '/events',
+  path: '/events',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExoplanetsRoute = ExoplanetsRouteImport.update({
+  id: '/exoplanets',
+  path: '/exoplanets',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExplorerRoute = ExplorerRouteImport.update({
@@ -56,14 +86,44 @@ const MissionsRoute = MissionsRouteImport.update({
   path: '/missions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NeoRoute = NeoRouteImport.update({
+  id: '/neo',
+  path: '/neo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotebookRoute = NotebookRouteImport.update({
+  id: '/notebook',
+  path: '/notebook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResearchRoute = ResearchRouteImport.update({
   id: '/research',
   path: '/research',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SatellitesRoute = SatellitesRouteImport.update({
+  id: '/satellites',
+  path: '/satellites',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ScaleRoute = ScaleRouteImport.update({
+  id: '/scale',
+  path: '/scale',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TelemetryRoute = TelemetryRouteImport.update({
   id: '/telemetry',
   path: '/telemetry',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TimemachineRoute = TimemachineRouteImport.update({
+  id: '/timemachine',
+  path: '/timemachine',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WeatherRoute = WeatherRouteImport.update({
+  id: '/weather',
+  path: '/weather',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExplorerIndexRoute = ExplorerIndexRouteImport.update({
@@ -81,12 +141,22 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/ar': typeof ArRoute
+  '/colony': typeof ColonyRoute
+  '/command': typeof CommandRoute
   '/copilot': typeof CopilotRoute
+  '/events': typeof EventsRoute
+  '/exoplanets': typeof ExoplanetsRoute
   '/explorer': typeof ExplorerRouteWithChildren
   '/gallery': typeof GalleryRoute
   '/missions': typeof MissionsRoute
+  '/neo': typeof NeoRoute
+  '/notebook': typeof NotebookRoute
   '/research': typeof ResearchRoute
+  '/satellites': typeof SatellitesRoute
+  '/scale': typeof ScaleRoute
   '/telemetry': typeof TelemetryRoute
+  '/timemachine': typeof TimemachineRoute
+  '/weather': typeof WeatherRoute
   '/explorer/$body': typeof ExplorerBodyRoute
   '/explorer/': typeof ExplorerIndexRoute
 }
@@ -94,11 +164,21 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/ar': typeof ArRoute
+  '/colony': typeof ColonyRoute
+  '/command': typeof CommandRoute
   '/copilot': typeof CopilotRoute
+  '/events': typeof EventsRoute
+  '/exoplanets': typeof ExoplanetsRoute
   '/gallery': typeof GalleryRoute
   '/missions': typeof MissionsRoute
+  '/neo': typeof NeoRoute
+  '/notebook': typeof NotebookRoute
   '/research': typeof ResearchRoute
+  '/satellites': typeof SatellitesRoute
+  '/scale': typeof ScaleRoute
   '/telemetry': typeof TelemetryRoute
+  '/timemachine': typeof TimemachineRoute
+  '/weather': typeof WeatherRoute
   '/explorer/$body': typeof ExplorerBodyRoute
   '/explorer': typeof ExplorerIndexRoute
 }
@@ -107,12 +187,22 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/ar': typeof ArRoute
+  '/colony': typeof ColonyRoute
+  '/command': typeof CommandRoute
   '/copilot': typeof CopilotRoute
+  '/events': typeof EventsRoute
+  '/exoplanets': typeof ExoplanetsRoute
   '/explorer': typeof ExplorerRouteWithChildren
   '/gallery': typeof GalleryRoute
   '/missions': typeof MissionsRoute
+  '/neo': typeof NeoRoute
+  '/notebook': typeof NotebookRoute
   '/research': typeof ResearchRoute
+  '/satellites': typeof SatellitesRoute
+  '/scale': typeof ScaleRoute
   '/telemetry': typeof TelemetryRoute
+  '/timemachine': typeof TimemachineRoute
+  '/weather': typeof WeatherRoute
   '/explorer/$body': typeof ExplorerBodyRoute
   '/explorer/': typeof ExplorerIndexRoute
 }
@@ -122,12 +212,22 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/ar'
+    | '/colony'
+    | '/command'
     | '/copilot'
+    | '/events'
+    | '/exoplanets'
     | '/explorer'
     | '/gallery'
     | '/missions'
+    | '/neo'
+    | '/notebook'
     | '/research'
+    | '/satellites'
+    | '/scale'
     | '/telemetry'
+    | '/timemachine'
+    | '/weather'
     | '/explorer/$body'
     | '/explorer/'
   fileRoutesByTo: FileRoutesByTo
@@ -135,11 +235,21 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/ar'
+    | '/colony'
+    | '/command'
     | '/copilot'
+    | '/events'
+    | '/exoplanets'
     | '/gallery'
     | '/missions'
+    | '/neo'
+    | '/notebook'
     | '/research'
+    | '/satellites'
+    | '/scale'
     | '/telemetry'
+    | '/timemachine'
+    | '/weather'
     | '/explorer/$body'
     | '/explorer'
   id:
@@ -147,12 +257,22 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/ar'
+    | '/colony'
+    | '/command'
     | '/copilot'
+    | '/events'
+    | '/exoplanets'
     | '/explorer'
     | '/gallery'
     | '/missions'
+    | '/neo'
+    | '/notebook'
     | '/research'
+    | '/satellites'
+    | '/scale'
     | '/telemetry'
+    | '/timemachine'
+    | '/weather'
     | '/explorer/$body'
     | '/explorer/'
   fileRoutesById: FileRoutesById
@@ -161,12 +281,22 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   ArRoute: typeof ArRoute
+  ColonyRoute: typeof ColonyRoute
+  CommandRoute: typeof CommandRoute
   CopilotRoute: typeof CopilotRoute
+  EventsRoute: typeof EventsRoute
+  ExoplanetsRoute: typeof ExoplanetsRoute
   ExplorerRoute: typeof ExplorerRouteWithChildren
   GalleryRoute: typeof GalleryRoute
   MissionsRoute: typeof MissionsRoute
+  NeoRoute: typeof NeoRoute
+  NotebookRoute: typeof NotebookRoute
   ResearchRoute: typeof ResearchRoute
+  SatellitesRoute: typeof SatellitesRoute
+  ScaleRoute: typeof ScaleRoute
   TelemetryRoute: typeof TelemetryRoute
+  TimemachineRoute: typeof TimemachineRoute
+  WeatherRoute: typeof WeatherRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -192,11 +322,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ArRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/colony': {
+      id: '/colony'
+      path: '/colony'
+      fullPath: '/colony'
+      preLoaderRoute: typeof ColonyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/command': {
+      id: '/command'
+      path: '/command'
+      fullPath: '/command'
+      preLoaderRoute: typeof CommandRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/copilot': {
       id: '/copilot'
       path: '/copilot'
       fullPath: '/copilot'
       preLoaderRoute: typeof CopilotRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/events': {
+      id: '/events'
+      path: '/events'
+      fullPath: '/events'
+      preLoaderRoute: typeof EventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/exoplanets': {
+      id: '/exoplanets'
+      path: '/exoplanets'
+      fullPath: '/exoplanets'
+      preLoaderRoute: typeof ExoplanetsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/explorer': {
@@ -220,6 +378,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MissionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/neo': {
+      id: '/neo'
+      path: '/neo'
+      fullPath: '/neo'
+      preLoaderRoute: typeof NeoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notebook': {
+      id: '/notebook'
+      path: '/notebook'
+      fullPath: '/notebook'
+      preLoaderRoute: typeof NotebookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/research': {
       id: '/research'
       path: '/research'
@@ -227,11 +399,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResearchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/satellites': {
+      id: '/satellites'
+      path: '/satellites'
+      fullPath: '/satellites'
+      preLoaderRoute: typeof SatellitesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/scale': {
+      id: '/scale'
+      path: '/scale'
+      fullPath: '/scale'
+      preLoaderRoute: typeof ScaleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/telemetry': {
       id: '/telemetry'
       path: '/telemetry'
       fullPath: '/telemetry'
       preLoaderRoute: typeof TelemetryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/timemachine': {
+      id: '/timemachine'
+      path: '/timemachine'
+      fullPath: '/timemachine'
+      preLoaderRoute: typeof TimemachineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/weather': {
+      id: '/weather'
+      path: '/weather'
+      fullPath: '/weather'
+      preLoaderRoute: typeof WeatherRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/explorer/': {
@@ -269,12 +469,22 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   ArRoute: ArRoute,
+  ColonyRoute: ColonyRoute,
+  CommandRoute: CommandRoute,
   CopilotRoute: CopilotRoute,
+  EventsRoute: EventsRoute,
+  ExoplanetsRoute: ExoplanetsRoute,
   ExplorerRoute: ExplorerRouteWithChildren,
   GalleryRoute: GalleryRoute,
   MissionsRoute: MissionsRoute,
+  NeoRoute: NeoRoute,
+  NotebookRoute: NotebookRoute,
   ResearchRoute: ResearchRoute,
+  SatellitesRoute: SatellitesRoute,
+  ScaleRoute: ScaleRoute,
   TelemetryRoute: TelemetryRoute,
+  TimemachineRoute: TimemachineRoute,
+  WeatherRoute: WeatherRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

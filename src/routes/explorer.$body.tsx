@@ -362,7 +362,7 @@ function PlanetDashboard() {
       <div className="flex flex-wrap items-center gap-3">
         <Link
           to="/explorer"
-          className="flex h-9 items-center gap-2 rounded-full border border-border px-3 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="glass-chip flex h-9 items-center gap-2 rounded-full px-3 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-3.5 w-3.5" /> Orbital chart
         </Link>
@@ -372,7 +372,7 @@ function PlanetDashboard() {
               key={b.id}
               to="/explorer/$body"
               params={{ body: b.id }}
-              className="rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground data-[status=active]:bg-card data-[status=active]:text-foreground"
+              className="rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground data-[status=active]:bg-glass-fill-strong data-[status=active]:text-foreground"
             >
               {b.name}
             </Link>
@@ -381,7 +381,7 @@ function PlanetDashboard() {
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
-        <div className="flex items-center gap-2 rounded-full border border-border bg-card/50 px-3 py-1.5">
+        <div className="flex items-center gap-2 rounded-full border border-glass-edge bg-glass-fill px-3 py-1.5 backdrop-blur-xl">
           <Columns2 className="h-3.5 w-3.5 text-primary" />
           <ComparePicker current={body.id} onSelect={setCompare} />
         </div>
@@ -453,7 +453,7 @@ function PlanetDashboard() {
             <button
               onClick={shareView}
               title="Copy link to this view"
-              className="flex h-9 items-center gap-2 rounded-full border border-border bg-background/80 px-3 text-xs text-muted-foreground shadow-lg backdrop-blur-xl transition-colors hover:text-foreground"
+              className="glass-chip flex h-9 items-center gap-2 rounded-full px-3 text-xs text-muted-foreground hover:text-foreground"
             >
               <Share2 className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Share view</span>
@@ -468,7 +468,7 @@ function PlanetDashboard() {
 
           {mode === "infrared" && (
             <div className="pointer-events-none absolute bottom-20 left-4 hidden max-w-xs md:block">
-              <p className="label-tele rounded-lg border border-border bg-background/80 p-2 text-[9px] leading-relaxed text-muted-foreground backdrop-blur-xl">
+              <p className="label-tele rounded-lg border border-glass-edge bg-glass-fill p-2 text-[9px] leading-relaxed text-muted-foreground backdrop-blur-xl">
                 Infrared is a modeled thermal view derived from real elevation / radar data — not a
                 direct thermal-IR photograph.
               </p>
@@ -624,7 +624,7 @@ function PlanetDashboard() {
                         search: { lat: String(l.lat), lon: String(l.lon) },
                       })
                     }
-                    className="flex min-w-0 flex-1 items-start gap-3 rounded-xl border border-border bg-card/40 p-3 text-left transition-colors hover:border-border-strong"
+                    className="flex min-w-0 flex-1 items-start gap-3 rounded-xl border border-glass-edge bg-glass-fill p-3 text-left transition-colors hover:border-glass-edge-strong"
                   >
                     <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                     <span>
@@ -797,7 +797,7 @@ function LocationPanel({
       <div className="mt-4">
         <div className="label-tele mb-2">Nearest named feature</div>
         {feature ? (
-          <div className="rounded-xl border border-border bg-card/40 p-3">
+          <div className="rounded-xl border border-glass-edge bg-glass-fill p-3">
             <div className="text-sm font-medium">{feature.name}</div>
             <div className="mt-0.5 text-xs text-muted-foreground">{feature.note}</div>
             <div className="label-tele mt-1 text-[9px]">

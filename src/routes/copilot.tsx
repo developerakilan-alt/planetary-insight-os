@@ -28,7 +28,11 @@ function Copilot() {
     <div className="mx-auto max-w-[1100px] px-6 pb-24 pt-10">
       <PageMasthead
         eyebrow="Analysis engine"
-        title="AI Scientist"
+        title={
+          <>
+            AI <em className="text-editorial">Scientist.</em>
+          </>
+        }
         description="A planetary science analyst trained on mission literature. Ask about geology, atmospheres, habitability or exploration architecture."
         meta={[
           { label: "Corpus", value: "Mission literature" },

@@ -20,6 +20,16 @@ const ACTIONS = [
   { label: "Telemetry", hint: "Live system metrics", to: "/telemetry" },
   { label: "AI Copilot", hint: "Ask the AI Scientist", to: "/copilot" },
   { label: "Gallery", hint: "NASA imagery catalogue", to: "/gallery" },
+  { label: "Events Calendar", hint: "Eclipses, moon phases, meteors", to: "/events" },
+  { label: "Asteroid Radar", hint: "NEO close approaches", to: "/neo" },
+  { label: "Exoplanets", hint: "Worlds beyond the solar system", to: "/exoplanets" },
+  { label: "Scale Lab", hint: "Compare planet metrics", to: "/scale" },
+  { label: "Time Machine", hint: "Replay epochs 1960–2050", to: "/timemachine" },
+  { label: "Satellite View", hint: "Earth orbit traffic", to: "/satellites" },
+  { label: "Weather Station", hint: "Forecasts across the solar system", to: "/weather" },
+  { label: "Colony Planner", hint: "Terraforming simulator", to: "/colony" },
+  { label: "Science Notebook", hint: "Field research log", to: "/notebook" },
+  { label: "Command Center", hint: "Personal mission-control desk", to: "/command" },
 ] as const;
 
 /** Tiny procedural planet thumbnail built from the body's shader palette. */

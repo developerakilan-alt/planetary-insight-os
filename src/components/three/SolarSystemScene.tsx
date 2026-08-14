@@ -165,6 +165,7 @@ export default function SolarSystemScene({
   onMissionSelect,
   spacecraft,
   mapView,
+  frameloop,
 }: {
   onSelect: (id: BodyId) => void;
   focus: BodyId | null;
@@ -176,6 +177,8 @@ export default function SolarSystemScene({
   spacecraft?: SpacecraftPosition[] | null | undefined;
   /** star-map framing: pull the camera far back to view the whole system */
   mapView?: boolean | undefined;
+  /** canvas render loop mode — "demand" pauses rendering while paused */
+  frameloop?: "always" | "demand" | "never" | undefined;
 }) {
   const [hovered, setHovered] = useState<BodyId | null>(null);
 
@@ -183,6 +186,7 @@ export default function SolarSystemScene({
 
   return (
     <Canvas
+      frameloop={frameloop ?? "always"}
       dpr={[1, 1.6]}
       camera={{ position: [0, 22, 52], fov: 45 }}
       gl={{ antialias: true, alpha: true }}

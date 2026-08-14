@@ -205,7 +205,11 @@ function Telemetry() {
       <PageMasthead
         eyebrow="Live telemetry"
         icon={<Activity className="h-3.5 w-3.5" />}
-        title="Flight operations console"
+        title={
+          <>
+            Flight operations <em className="text-editorial">console.</em>
+          </>
+        }
         description="Live mission tracking from public feeds: the International Space Station (wheretheiss.at), Deep Space Network antenna links (DSN Now), the Perseverance surface downlink (NASA/JPL) and Earth-relative distances to every planet, computed live with astronomy-engine."
         meta={[
           { label: "Feeds", value: "DSN Now · ISS · JPL" },
@@ -243,7 +247,7 @@ function Telemetry() {
             />
           </div>
 
-          <div className="relative mt-5 aspect-[2/1] overflow-hidden rounded-xl border border-border bg-background/60">
+          <div className="relative mt-5 aspect-[2/1] overflow-hidden rounded-2xl border border-glass-edge bg-glass-fill">
             <img
               src="/textures/earth/color_M.jpg"
               alt=""
@@ -283,7 +287,7 @@ function Telemetry() {
               height={640}
               className="absolute inset-0 h-full w-full"
             />
-            <span className="label-tele pointer-events-none absolute left-3 top-3 rounded-full border border-border bg-background/70 px-2 py-1 text-[9px] backdrop-blur">
+            <span className="label-tele pointer-events-none absolute left-3 top-3 rounded-full border border-glass-edge bg-background/40 px-2 py-1 text-[9px] backdrop-blur-2xl">
               Ground track · last {track.current.length} samples
             </span>
           </div>
@@ -458,7 +462,7 @@ function Telemetry() {
         </div>
 
         <div className="mt-5 grid gap-5 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-          <div className="relative aspect-[16/9] overflow-hidden rounded-xl border border-border bg-background/60">
+          <div className="relative aspect-[16/9] overflow-hidden rounded-2xl border border-glass-edge bg-glass-fill">
             {shot?.medium ? (
               <img
                 src={shot.medium}
@@ -470,7 +474,7 @@ function Telemetry() {
             ) : (
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_40%_35%,#334155,#111827_60%,#05070A_100%)]" />
             )}
-            <span className="label-tele pointer-events-none absolute left-3 top-3 rounded-full border border-border bg-background/70 px-2 py-1 text-[9px] backdrop-blur">
+            <span className="label-tele pointer-events-none absolute left-3 top-3 rounded-full border border-glass-edge bg-background/40 px-2 py-1 text-[9px] backdrop-blur-2xl">
               Latest downlinked surface image
             </span>
           </div>

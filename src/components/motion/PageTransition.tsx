@@ -6,9 +6,9 @@ import type { ReactNode } from "react";
 export function PageTransition({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const reduce = useReducedMotion();
-  const enter = reduce ? { opacity: 1 } : { opacity: 1, y: 0, filter: "blur(0px)" };
-  const leave = reduce ? { opacity: 0 } : { opacity: 0, y: -10, filter: "blur(8px)" };
-  const start = reduce ? { opacity: 0 } : { opacity: 0, y: 12, filter: "blur(8px)" };
+  const enter = reduce ? { opacity: 1 } : { opacity: 1, y: 0 };
+  const leave = reduce ? { opacity: 0 } : { opacity: 0, y: -10 };
+  const start = reduce ? { opacity: 0 } : { opacity: 0, y: 12 };
 
   return (
     <AnimatePresence mode="wait" initial={false}>

@@ -110,21 +110,22 @@ function Landing() {
           >
             <div className="mx-auto flex h-full max-w-[1600px] items-center justify-center gap-12 px-6 xl:justify-between">
               <div className="pointer-events-auto max-w-xl text-center xl:mx-0 xl:text-left">
-                <div className="label-tele mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-card/50 px-3 py-1.5 backdrop-blur">
+                <div className="label-tele mb-6 inline-flex items-center gap-2 rounded-full border border-glass-edge bg-glass-fill px-3 py-1.5 backdrop-blur-xl">
                   <span className="h-1.5 w-1.5 animate-pulse-ring rounded-full bg-secondary" />
-                  Planetary Intelligence · Build 4.2.1
+                  Planetary Intelligence · Build 4.3.0
                 </div>
                 <h1 className="text-gradient font-display text-[clamp(2.9rem,7.5vw,6.5rem)] font-semibold leading-[0.9] tracking-[-0.05em]">
                   COSMOS OS
                 </h1>
                 <p className="mx-auto mt-6 max-w-md text-balance text-base text-muted-foreground sm:text-lg xl:mx-0">
-                  AI Powered Planetary Intelligence Platform — The Future of Planetary Exploration.
+                  AI Powered Planetary Intelligence Platform —{" "}
+                  <em className="text-editorial">the future of planetary exploration.</em>
                 </p>
                 <div className="mt-10 flex flex-wrap items-center justify-center gap-3 xl:justify-start">
                   <Magnetic strength={0.18}>
                     <Link
                       to="/explorer"
-                      className="group inline-flex h-12 items-center gap-2 rounded-full bg-primary px-6 text-sm font-medium text-primary-foreground transition-transform hover:scale-[1.03]"
+                      className="group inline-flex h-12 items-center gap-2 rounded-2xl bg-primary px-6 text-sm font-medium text-primary-foreground transition-transform hover:scale-[1.03]"
                       style={{ boxShadow: "var(--shadow-glow)" }}
                     >
                       Launch Explorer
@@ -134,7 +135,7 @@ function Landing() {
                   <Magnetic strength={0.18}>
                     <Link
                       to="/missions"
-                      className="inline-flex h-12 items-center gap-2 rounded-full border border-border-strong bg-card/60 px-6 text-sm font-medium backdrop-blur-xl transition-colors hover:bg-card"
+                      className="glass-chip inline-flex h-12 items-center gap-2 rounded-2xl px-6 text-sm font-medium text-foreground"
                     >
                       <Play className="h-4 w-4" />
                       Watch Mission
@@ -143,7 +144,7 @@ function Landing() {
                   <Magnetic strength={0.18}>
                     <Link
                       to="/research"
-                      className="inline-flex h-12 items-center gap-2 rounded-full border border-border px-6 text-sm font-medium text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground"
+                      className="glass-chip inline-flex h-12 items-center gap-2 rounded-2xl px-6 text-sm font-medium text-muted-foreground hover:text-foreground"
                     >
                       Open Research Console
                     </Link>
@@ -160,7 +161,7 @@ function Landing() {
           <ProgressRail index={index} />
 
           {/* live telemetry rail */}
-          <div className="absolute inset-x-0 bottom-0 z-10 border-t border-border bg-background/50 backdrop-blur-xl">
+          <div className="absolute inset-x-0 bottom-0 z-10 border-t border-glass-edge bg-background/40 backdrop-blur-2xl">
             <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-x-10 gap-y-3 px-6 py-4">
               <div className="flex items-center gap-3">
                 <span className="label-tele">Target</span>
@@ -308,7 +309,7 @@ function Tele({ label, value }: { label: string; value: string }) {
 function MissionTicker() {
   const strip = MISSIONS.map((m) => `${m.name} · ${m.agency} · ${m.year}`);
   return (
-    <div className="relative z-10 border-b border-border bg-card/40 backdrop-blur-sm">
+    <div className="relative z-10 border-b border-glass-edge bg-glass-fill backdrop-blur-xl">
       <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-28 bg-gradient-to-r from-background to-transparent" />
       <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-28 bg-gradient-to-l from-background to-transparent" />
       <div className="overflow-hidden py-3">
@@ -363,7 +364,8 @@ function Capabilities() {
             <span className="label-tele">Capabilities</span>
           </div>
           <h2 className="mt-4 text-[clamp(1.7rem,3.4vw,2.8rem)] font-semibold leading-[1.05]">
-            One console for exploration, analysis and mission planning.
+            One console for exploration, analysis and{" "}
+            <em className="text-editorial">mission planning.</em>
           </h2>
           <p className="mt-5 text-muted-foreground">
             Cosmos OS unifies scientific visualisation, published planetary datasets and an AI
@@ -455,7 +457,7 @@ function MissionFocus() {
               <span className="label-tele">Mission focus · live DSN</span>
             </div>
             <h2 className="mt-4 text-[clamp(1.7rem,3.4vw,2.6rem)] font-semibold leading-[1.05]">
-              In transit, right now.
+              In transit, <em className="text-editorial">right now.</em>
             </h2>
           </div>
         </div>
@@ -472,7 +474,7 @@ function MissionFocus() {
                   {clipper.agency} · {clipper.year} · {clipper.type}
                 </div>
               </div>
-              <span className="label-tele flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-2.5 py-1 text-[9px]">
+              <span className="label-tele flex items-center gap-1.5 rounded-full border border-glass-edge bg-glass-fill px-2.5 py-1 text-[9px] backdrop-blur-xl">
                 <span className="h-1.5 w-1.5 animate-pulse-ring rounded-full bg-secondary" />
                 {clipper.status.toUpperCase()}
               </span>
@@ -483,14 +485,14 @@ function MissionFocus() {
             </p>
 
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-xl border border-border bg-background/60 p-4">
+              <div className="rounded-2xl border border-glass-edge bg-glass-fill p-4 backdrop-blur-xl">
                 <div className="label-tele text-[9px]">TIME TO JOVIAN ARRIVAL</div>
                 <div className="mt-2 font-mono text-3xl font-semibold tabular-nums text-primary">
                   {days === null ? "—" : `T−${days.toLocaleString()}d`}
                 </div>
                 <div className="label-tele mt-1 text-[9px]">2030 · Jupiter system insertion</div>
               </div>
-              <div className="rounded-xl border border-border bg-background/60 p-4">
+              <div className="rounded-2xl border border-glass-edge bg-glass-fill p-4 backdrop-blur-xl">
                 <div className="label-tele text-[9px]">PAYLOAD · SENSORS ONLINE</div>
                 <div className="mt-2.5 space-y-1.5">
                   {["COMMS", "IMAGING", "RADAR", "MAGNETOMETER"].map((s) => (
@@ -625,7 +627,7 @@ function MissionsSweep() {
             <span className="label-tele">Mission timeline · scroll to sweep</span>
           </div>
           <h2 className="mt-4 max-w-2xl text-[clamp(1.7rem,3.4vw,2.6rem)] font-semibold leading-[1.05]">
-            Sixty years of exploration in a single sweep.
+            Sixty years of exploration in a <em className="text-editorial">single sweep.</em>
           </h2>
         </div>
 
@@ -739,7 +741,7 @@ function FaqChangelog() {
             <span className="label-tele">Frequently asked</span>
           </div>
           <h2 className="mt-4 text-[clamp(1.6rem,3vw,2.4rem)] font-semibold leading-[1.05]">
-            Ground control questions.
+            Ground control <em className="text-editorial">questions.</em>
           </h2>
           <Accordion type="single" collapsible className="mt-8">
             {FAQ.map((f) => (

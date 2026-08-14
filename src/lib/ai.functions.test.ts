@@ -65,7 +65,8 @@ describe("gatewayRequest", () => {
     vi.stubEnv("LOVABLE_API_KEY", "");
     const fetcher = vi.fn<typeof fetch>();
     const outcome = await gatewayRequest([{ role: "user", content: "hi" }], fetcher);
-    expect(outcome).toEqual({ status: "error", message: "AI gateway is not configured." });
+    if (outcome.status !== "error") throw new Error("expected error outcome");
+    expect(outcome.message).toContain("AI gateway is not configured.");
     expect(fetcher).not.toHaveBeenCalled();
   });
 });
