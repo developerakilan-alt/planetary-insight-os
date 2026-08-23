@@ -157,6 +157,14 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="en">
       <head>
         <HeadContent />
+        {/* One-time service-worker reset. A worker left by an older build can
+            keep serving stale modules and crash hydration; this runs before
+            any app code, unregisters workers and wipes caches once. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{if(localStorage.getItem("cosmos-sw-reset")==="v2")return;if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(function(rs){for(var i=0;i<rs.length;i++)rs[i].unregister()})}if(window.caches){caches.keys().then(function(ks){for(var j=0;j<ks.length;j++)caches.delete(ks[j])})}localStorage.setItem("cosmos-sw-reset","v2")}catch(e){}})();`,
+          }}
+        />
       </head>
       <body>
         {children}

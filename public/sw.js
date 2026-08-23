@@ -1,5 +1,5 @@
 /* Cosmos OS service worker — app shell + planetary texture caching. */
-const VERSION = "cosmos-v1";
+const VERSION = "cosmos-v2";
 const SHELL_CACHE = `${VERSION}-shell`;
 const TEXTURE_CACHE = `${VERSION}-textures`;
 const PRECACHE = [

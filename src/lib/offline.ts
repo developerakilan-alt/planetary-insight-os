@@ -6,7 +6,23 @@ export function isServiceWorkerSupported(): boolean {
 
 export function registerServiceWorker(): void {
   if (!isServiceWorkerSupported() || import.meta.env.SSR) return;
-  if (import.meta.env.DEV) return; // only register in production builds
+
+  if (import.meta.env.DEV) {
+    // A service worker left behind by an older build (e.g. a previous
+    // `vite preview` on the same port) would keep serving stale cached
+    // modules to the dev server and crash hydration. Remove it and wipe
+    // every cache so development always runs on fresh code.
+    void navigator.serviceWorker.getRegistrations().then((regs) => {
+      for (const reg of regs) void reg.unregister();
+    });
+    if ("caches" in window) {
+      void window.caches.keys().then((keys) => {
+        for (const key of keys) void window.caches.delete(key);
+      });
+    }
+    return;
+  }
+
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("/sw.js").catch(() => {
       // The app must keep working even if the SW fails to register.

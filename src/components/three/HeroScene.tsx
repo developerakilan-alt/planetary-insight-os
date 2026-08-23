@@ -1,80 +1,159 @@
-import { Canvas, useFrame } from "@react-three/fiber";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Canvas, useFrame, useLoader } from "@react-three/fiber";
+import type { MotionValue } from "framer-motion";
+import { Component, Suspense, useMemo, useRef, type ReactNode } from "react";
 import * as THREE from "three";
-import { BODIES, type BodyId, bodyMap } from "@/data/bodies";
-import { Planet } from "./Planet";
-import { Starfield } from "./Starfield";
-import { MilkyWay } from "./SpaceEffects";
+import type { BodyId } from "@/data/bodies";
+import { bodyMap } from "@/data/bodies";
+import { RAIL_ORDER, RAIL_START } from "@/lib/hero-sequence";
+import { RingSystem } from "./SpaceEffects";
 
-function Rig({ bodyId, spin }: { bodyId: BodyId; spin: number }) {
-  const group = useRef<THREE.Group>(null);
-  const [shown, setShown] = useState<BodyId>(bodyId);
-  const phase = useRef(1); // 1 = fully in
+/**
+ * Keeps one bad texture (or any render hiccup) from taking down the whole
+ * page — the affected planet just doesn't render.
+ */
+class BodyErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  override state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  override render() {
+    return this.state.failed ? null : this.props.children;
+  }
+}
 
-  useEffect(() => {
-    if (bodyId !== shown) phase.current = -1; // start exit
-  }, [bodyId, shown]);
+/** Official NASA data imagery — the high-resolution color maps for every body. */
+function textureUrl(id: BodyId): string {
+  return `/textures/${id}/color_H.jpg`;
+}
 
-  useFrame((state, dt) => {
-    const t = Math.min(dt, 0.05);
-    if (!group.current) return;
-    if (phase.current < 0) {
-      phase.current += t * 2.4;
-      if (phase.current >= 0) {
-        setShown(bodyId);
-        phase.current = 0.001;
-      }
-    } else if (phase.current < 1) {
-      phase.current = Math.min(1, phase.current + t * 1.4);
-    }
-    const p = Math.abs(phase.current);
-    const eased = 1 - Math.pow(1 - p, 3);
-    group.current.scale.setScalar(0.55 + eased * 0.45);
-    group.current.position.x = (1 - eased) * (phase.current < 0 ? -1.6 : 1.6);
-    const mx = state.pointer.x * 0.12;
-    const my = state.pointer.y * 0.08;
-    group.current.rotation.x = THREE.MathUtils.lerp(group.current.rotation.x, -my, t * 2);
-    group.current.position.y = THREE.MathUtils.lerp(group.current.position.y, mx * 0.3, t * 2);
-    // scroll-driven spin: one full revolution across the whole hero scroll
-    group.current.rotation.y = THREE.MathUtils.lerp(
-      group.current.rotation.y,
-      spin * Math.PI * 2,
-      t * 4,
-    );
-  });
+// Warm the texture cache at module load so scrolling never suspends or hitches.
+RAIL_ORDER.forEach((id) => {
+  void useLoader.preload(THREE.TextureLoader, textureUrl(id));
+});
 
-  const body = bodyMap[shown];
+const SPACING = 7.8; // one planet on screen at a time — the next waits off-frame right
+const BASE_Y = -1.45; // planets sit low in the frame
+const FOCUS_BOOST = 0.16; // gentle scale pop for the focused planet
+const DEPTH_STEP = 2.6; // how far back each neighbour recedes per step
+
+function TexturedBody({ bodyId }: { bodyId: BodyId }) {
+  const body = bodyMap[bodyId];
+  const map = useLoader(THREE.TextureLoader, textureUrl(bodyId));
+
+  useMemo(() => {
+    map.colorSpace = THREE.SRGBColorSpace;
+    map.wrapS = THREE.RepeatWrapping;
+    map.anisotropy = 8;
+    map.needsUpdate = true;
+  }, [map]);
 
   return (
-    <group ref={group}>
-      <Planet key={shown} body={body} scale={2.1} options={{ quality: "high" }} />
+    <group rotation={[0, 0, (body.tilt * Math.PI) / 180]}>
+      {/* plain photo-real material: no glow, no emissive — just NASA imagery */}
+      <mesh>
+        <sphereGeometry args={[1, 96, 48]} />
+        <meshStandardMaterial map={map} roughness={0.95} metalness={0} />
+      </mesh>
+      {bodyId === "saturn" && <RingSystem />}
     </group>
   );
 }
 
-export default function HeroScene({
-  bodyId,
-  spin = 0,
-}: {
-  bodyId: BodyId;
-  /** 0…1 scroll progress; drives the planet's spin */
-  spin?: number;
-}) {
+/**
+ * Pinned, scroll-driven cinematic carousel with true 3D depth parallax.
+ *
+ * Every planet is mounted exactly once and positioned per-frame straight from
+ * the damped scroll value. Depth comes from pushing off-focus planets BACK in
+ * Z (position.z) — the perspective camera shrinks them naturally — combined
+ * with a small explicit scale falloff, so the focused planet feels like it is
+ * dollying toward you while the rest of the system falls away behind it.
+ */
+function Carousel({ spin }: { spin?: MotionValue<number> | undefined }) {
+  const wrapper = useRef<THREE.Group>(null);
+  const slots = useRef<(THREE.Group | null)[]>([]);
+  const current = useRef(RAIL_START);
+  const N = RAIL_ORDER.length;
+  const maxV = N - 1 - RAIL_START;
+
+  useFrame((state, dt) => {
+    const t = Math.min(dt, 0.05);
+    const targetV = RAIL_START + (spin?.get() ?? 0) * maxV;
+    // critically-damped smoothing → silky scrubbing even with jumpy wheel input
+    current.current = THREE.MathUtils.damp(current.current, targetV, 6, t);
+
+    const focus = current.current;
+
+    for (let i = 0; i < N; i++) {
+      const g = slots.current[i];
+      if (!g) continue;
+
+      const d = i - focus;
+      const ad = Math.abs(d);
+
+      // lateral rail movement
+      g.position.x = d * SPACING;
+
+      // depth-based object movement: off-focus bodies fall away behind the camera plane
+      g.position.z = -Math.min(ad, 3) * DEPTH_STEP;
+
+      // arc downward as they drift away
+      g.position.y = BASE_Y - Math.min(ad, 1) * 0.18 - Math.max(0, ad - 1) * 0.35;
+
+      // scale transformation: perspective handles most of it, this adds a subtle focus pop
+      const s =
+        (1 + Math.max(0, 1 - ad) * FOCUS_BOOST) * Math.max(0.22, 1 - Math.max(0, ad - 1) * 0.24);
+      g.scale.setScalar(Math.max(s, 0.0001));
+      g.visible = s > 0.03;
+
+      g.rotation.y += t * (0.08 + i * 0.012);
+    }
+
+    if (wrapper.current) {
+      wrapper.current.rotation.y = THREE.MathUtils.lerp(
+        wrapper.current.rotation.y,
+        state.pointer.x * 0.06,
+        t * 2,
+      );
+      wrapper.current.rotation.x = THREE.MathUtils.lerp(
+        wrapper.current.rotation.x,
+        -state.pointer.y * 0.04,
+        t * 2,
+      );
+    }
+  });
+
   return (
-    <Canvas
-      dpr={[1, 1.75]}
-      camera={{ position: [0, 0, 7.8], fov: 40 }}
-      gl={{ antialias: true, alpha: true }}
-      style={{ position: "absolute", inset: 0 }}
-    >
-      <Suspense fallback={null}>
-        <MilkyWay />
-        <Starfield count={2400} radius={70} />
-        <Rig bodyId={bodyId} spin={spin} />
-      </Suspense>
-    </Canvas>
+    <group ref={wrapper}>
+      {RAIL_ORDER.map((id, i) => (
+        <Suspense key={id} fallback={null}>
+          <group
+            ref={(el) => {
+              slots.current[i] = el;
+            }}
+          >
+            <BodyErrorBoundary>
+              <TexturedBody bodyId={id} />
+            </BodyErrorBoundary>
+          </group>
+        </Suspense>
+      ))}
+    </group>
   );
 }
 
-export const HERO_SEQUENCE: BodyId[] = ["earth", "mars", "moon", "europa", "titan"];
-export const HERO_BODIES = BODIES;
+export default function HeroScene({ spin }: { spin?: MotionValue<number> | undefined }) {
+  return (
+    <Canvas
+      dpr={[1, 1.5]}
+      camera={{ position: [0, 0, 7.8], fov: 40 }}
+      gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+      style={{ position: "absolute", inset: 0 }}
+    >
+      {/* hard sunlight look — one strong key, almost nothing else */}
+      <ambientLight intensity={0.25} />
+      <directionalLight position={[5, 2.2, 6]} intensity={2.6} color="#fff4e0" />
+      <directionalLight position={[-4, -1, -3]} intensity={0.18} />
+      <Carousel spin={spin} />
+    </Canvas>
+  );
+}

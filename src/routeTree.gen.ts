@@ -19,6 +19,8 @@ import { Route as EventsRouteImport } from './routes/events'
 import { Route as ExoplanetsRouteImport } from './routes/exoplanets'
 import { Route as ExplorerRouteImport } from './routes/explorer'
 import { Route as GalleryRouteImport } from './routes/gallery'
+import { Route as JourneyRouteImport } from './routes/journey'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as MissionsRouteImport } from './routes/missions'
 import { Route as NeoRouteImport } from './routes/neo'
 import { Route as NotebookRouteImport } from './routes/notebook'
@@ -79,6 +81,16 @@ const ExplorerRoute = ExplorerRouteImport.update({
 const GalleryRoute = GalleryRouteImport.update({
   id: '/gallery',
   path: '/gallery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JourneyRoute = JourneyRouteImport.update({
+  id: '/journey',
+  path: '/journey',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MissionsRoute = MissionsRouteImport.update({
@@ -148,6 +160,8 @@ export interface FileRoutesByFullPath {
   '/exoplanets': typeof ExoplanetsRoute
   '/explorer': typeof ExplorerRouteWithChildren
   '/gallery': typeof GalleryRoute
+  '/journey': typeof JourneyRoute
+  '/login': typeof LoginRoute
   '/missions': typeof MissionsRoute
   '/neo': typeof NeoRoute
   '/notebook': typeof NotebookRoute
@@ -170,6 +184,8 @@ export interface FileRoutesByTo {
   '/events': typeof EventsRoute
   '/exoplanets': typeof ExoplanetsRoute
   '/gallery': typeof GalleryRoute
+  '/journey': typeof JourneyRoute
+  '/login': typeof LoginRoute
   '/missions': typeof MissionsRoute
   '/neo': typeof NeoRoute
   '/notebook': typeof NotebookRoute
@@ -194,6 +210,8 @@ export interface FileRoutesById {
   '/exoplanets': typeof ExoplanetsRoute
   '/explorer': typeof ExplorerRouteWithChildren
   '/gallery': typeof GalleryRoute
+  '/journey': typeof JourneyRoute
+  '/login': typeof LoginRoute
   '/missions': typeof MissionsRoute
   '/neo': typeof NeoRoute
   '/notebook': typeof NotebookRoute
@@ -219,6 +237,8 @@ export interface FileRouteTypes {
     | '/exoplanets'
     | '/explorer'
     | '/gallery'
+    | '/journey'
+    | '/login'
     | '/missions'
     | '/neo'
     | '/notebook'
@@ -241,6 +261,8 @@ export interface FileRouteTypes {
     | '/events'
     | '/exoplanets'
     | '/gallery'
+    | '/journey'
+    | '/login'
     | '/missions'
     | '/neo'
     | '/notebook'
@@ -264,6 +286,8 @@ export interface FileRouteTypes {
     | '/exoplanets'
     | '/explorer'
     | '/gallery'
+    | '/journey'
+    | '/login'
     | '/missions'
     | '/neo'
     | '/notebook'
@@ -288,6 +312,8 @@ export interface RootRouteChildren {
   ExoplanetsRoute: typeof ExoplanetsRoute
   ExplorerRoute: typeof ExplorerRouteWithChildren
   GalleryRoute: typeof GalleryRoute
+  JourneyRoute: typeof JourneyRoute
+  LoginRoute: typeof LoginRoute
   MissionsRoute: typeof MissionsRoute
   NeoRoute: typeof NeoRoute
   NotebookRoute: typeof NotebookRoute
@@ -369,6 +395,20 @@ declare module '@tanstack/react-router' {
       path: '/gallery'
       fullPath: '/gallery'
       preLoaderRoute: typeof GalleryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/journey': {
+      id: '/journey'
+      path: '/journey'
+      fullPath: '/journey'
+      preLoaderRoute: typeof JourneyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/missions': {
@@ -476,6 +516,8 @@ const rootRouteChildren: RootRouteChildren = {
   ExoplanetsRoute: ExoplanetsRoute,
   ExplorerRoute: ExplorerRouteWithChildren,
   GalleryRoute: GalleryRoute,
+  JourneyRoute: JourneyRoute,
+  LoginRoute: LoginRoute,
   MissionsRoute: MissionsRoute,
   NeoRoute: NeoRoute,
   NotebookRoute: NotebookRoute,

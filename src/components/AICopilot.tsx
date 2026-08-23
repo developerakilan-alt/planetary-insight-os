@@ -207,7 +207,7 @@ export function AICopilot() {
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label="Open the AI Scientist assistant"
-        className="fixed bottom-6 right-6 z-50 flex h-14 items-center gap-3 rounded-full border border-glass-edge-strong bg-glass-fill-strong px-5 backdrop-blur-2xl transition-transform hover:scale-[1.03]"
+        className="fixed bottom-6 right-6 z-50 flex h-14 items-center gap-3 rounded-full border border-glass-edge-strong bg-glass-fill-strong px-5 backdrop-blur-lg transition-transform hover:scale-[1.03]"
         style={{ boxShadow: "var(--shadow-glow)" }}
       >
         <span className="relative flex h-7 w-7 items-center justify-center">

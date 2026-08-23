@@ -1,22 +1,21 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { lazy, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
+  ChevronLeft,
   ChevronRight,
   Gauge,
   Layers,
   Orbit,
-  Play,
   Radar,
   Radio,
   Satellite,
+  X,
 } from "lucide-react";
 import { ClientOnly } from "@/components/ClientOnly";
-import { Nebula } from "@/components/Nebula";
-import { HeroHud } from "@/components/HeroHud";
+import { Cover } from "@/components/ui/cover";
 import { TiltCard } from "@/components/motion/TiltCard";
-import { Magnetic } from "@/components/motion/Magnetic";
 import { CountUp } from "@/components/motion/CountUp";
 import { Reveal } from "@/components/motion/Reveal";
 import {
@@ -25,13 +24,25 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { bodyMap, type BodyId } from "@/data/bodies";
 import { MISSIONS, type Mission } from "@/data/missions";
+import { bodyMap, type BodyId } from "@/data/bodies";
+import { HERO_ORDER, RAIL_ORDER, RAIL_START } from "@/lib/hero-sequence";
 import { dsnTargetName, fetchDsn, formatSignalRate, type DsnDish } from "@/lib/tracking";
 
 const HeroScene = lazy(() => import("@/components/three/HeroScene"));
+const EarthScene = lazy(() => import("@/components/three/EarthScene"));
 
-const SEQUENCE: BodyId[] = ["earth", "mars", "moon", "europa", "titan"];
+/** One-line caption per planet, shown under the focused planet's name. */
+const CAPTIONS: Record<string, string> = {
+  mercury: "A cratered iron world racing closest to the Sun — extremes of fire and ice.",
+  venus: "Earth's scorching twin, wrapped in golden clouds of sulphuric acid.",
+  earth: "The only known living world — a blue marble of oceans, forests and life.",
+  mars: "The red desert world of giant volcanoes, canyons and ancient rivers.",
+  saturn: "The jewel of the solar system, crowned in rings of ice and dust.",
+  jupiter: "King of the giants — a storm larger than Earth has raged for centuries.",
+  uranus: "An ice giant rolling on its side through pale methane skies.",
+  neptune: "The farthest giant — supersonic winds sweep its deep azure face.",
+};
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -56,140 +67,10 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
-  const [index, setIndex] = useState(0);
-  const [spin, setSpin] = useState(0);
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
-  const titleOpacity = useTransform(scrollYProgress, [0, 0.12], [1, 0]);
-  const titleY = useTransform(scrollYProgress, [0, 0.2], [0, -80]);
-
-  useEffect(() => {
-    const unsub = scrollYProgress.on("change", (v) => {
-      const i = Math.min(SEQUENCE.length - 1, Math.floor(v * SEQUENCE.length * 1.02));
-      setIndex(i);
-    });
-    return () => unsub();
-  }, [scrollYProgress]);
-
-  useEffect(() => {
-    const unsub = scrollYProgress.on("change", setSpin);
-    return () => unsub();
-  }, [scrollYProgress]);
-
-  const body = bodyMap[SEQUENCE[index] ?? "earth"];
-
   return (
     <>
-      <div ref={ref} className="relative h-[500vh]">
-        <div className="sticky top-0 h-screen overflow-hidden">
-          <Nebula />
-          <HeroHud />
-          <div className="absolute inset-0">
-            <ClientOnly>
-              <HeroScene bodyId={SEQUENCE[index] ?? "earth"} spin={spin} />
-            </ClientOnly>
-          </div>
-
-          {/* vignette */}
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(ellipse 80% 60% at 50% 50%, transparent 30%, var(--background) 100%)",
-              opacity: 0.85,
-            }}
-          />
-
-          {/* time-of-day tint */}
-          <TimeOfDayOverlay />
-
-          {/* command-center split: left copy + right instrument readout */}
-          <motion.div
-            style={{ opacity: titleOpacity, y: titleY }}
-            className="pointer-events-none absolute inset-0 z-10"
-          >
-            <div className="mx-auto flex h-full max-w-[1600px] items-center justify-center gap-12 px-6 xl:justify-between">
-              <div className="pointer-events-auto max-w-xl text-center xl:mx-0 xl:text-left">
-                <div className="label-tele mb-6 inline-flex items-center gap-2 rounded-full border border-glass-edge bg-glass-fill px-3 py-1.5 backdrop-blur-xl">
-                  <span className="h-1.5 w-1.5 animate-pulse-ring rounded-full bg-secondary" />
-                  Planetary Intelligence · Build 4.3.0
-                </div>
-                <h1 className="text-gradient font-display text-[clamp(2.9rem,7.5vw,6.5rem)] font-semibold leading-[0.9] tracking-[-0.05em]">
-                  COSMOS OS
-                </h1>
-                <p className="mx-auto mt-6 max-w-md text-balance text-base text-muted-foreground sm:text-lg xl:mx-0">
-                  AI Powered Planetary Intelligence Platform —{" "}
-                  <em className="text-editorial">the future of planetary exploration.</em>
-                </p>
-                <div className="mt-10 flex flex-wrap items-center justify-center gap-3 xl:justify-start">
-                  <Magnetic strength={0.18}>
-                    <Link
-                      to="/explorer"
-                      className="group inline-flex h-12 items-center gap-2 rounded-2xl bg-primary px-6 text-sm font-medium text-primary-foreground transition-transform hover:scale-[1.03]"
-                      style={{ boxShadow: "var(--shadow-glow)" }}
-                    >
-                      Launch Explorer
-                      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                    </Link>
-                  </Magnetic>
-                  <Magnetic strength={0.18}>
-                    <Link
-                      to="/missions"
-                      className="glass-chip inline-flex h-12 items-center gap-2 rounded-2xl px-6 text-sm font-medium text-foreground"
-                    >
-                      <Play className="h-4 w-4" />
-                      Watch Mission
-                    </Link>
-                  </Magnetic>
-                  <Magnetic strength={0.18}>
-                    <Link
-                      to="/research"
-                      className="glass-chip inline-flex h-12 items-center gap-2 rounded-2xl px-6 text-sm font-medium text-muted-foreground hover:text-foreground"
-                    >
-                      Open Research Console
-                    </Link>
-                  </Magnetic>
-                </div>
-              </div>
-
-              {/* permanent right-hand instrument panel */}
-              <HeroReadout body={body} />
-            </div>
-          </motion.div>
-
-          {/* scroll progress rail */}
-          <ProgressRail index={index} />
-
-          {/* live telemetry rail */}
-          <div className="absolute inset-x-0 bottom-0 z-10 border-t border-glass-edge bg-background/40 backdrop-blur-2xl">
-            <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-x-10 gap-y-3 px-6 py-4">
-              <div className="flex items-center gap-3">
-                <span className="label-tele">Target</span>
-                <span className="font-display text-sm">{body.name}</span>
-                <span className="label-tele">{body.designation}</span>
-              </div>
-              <Tele label="Radius" value={`${body.metrics.radiusKm.toLocaleString()} km`} />
-              <Tele label="Gravity" value={`${body.metrics.gravity} m/s²`} />
-              <Tele
-                label="Surface T"
-                value={`${body.metrics.tempC[0]}…${body.metrics.tempC[1]} °C`}
-              />
-              <Tele label="Pressure" value={`${body.metrics.pressureBar} bar`} />
-              <div className="ml-auto flex items-center gap-1.5">
-                {SEQUENCE.map((id, i) => (
-                  <span
-                    key={id}
-                    className={`h-1 rounded-full transition-all duration-500 ${
-                      i === index ? "w-8 bg-primary" : "w-3 bg-border-strong"
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
+      <EarthHero />
+      <PlanetRail />
       <MissionTicker />
       <Capabilities />
       <MissionFocus />
@@ -199,110 +80,277 @@ function Landing() {
   );
 }
 
-function TimeOfDayOverlay() {
-  const [hour, setHour] = useState<number | null>(null);
-  useEffect(() => setHour(new Date().getHours()), []);
-  const tint = useMemo(() => {
-    if (hour === null) return "transparent";
-    if (hour >= 5 && hour < 10) return "rgba(96,140,255,0.06)";
-    if (hour >= 10 && hour < 17) return "rgba(120,180,255,0.05)";
-    if (hour >= 17 && hour < 21) return "rgba(255,150,90,0.06)";
-    return "rgba(16,12,58,0.14)";
-  }, [hour]);
-  return (
-    <div
-      className="pointer-events-none absolute inset-0"
-      style={{
-        background: `radial-gradient(ellipse 90% 70% at 50% 45%, transparent 45%, ${tint} 100%)`,
-      }}
-    />
-  );
-}
+/**
+ * Section 1 — the pin-style hero: a giant photo-real Earth rising from the
+ * bottom of the viewport with an enormous "EARTH" wordmark behind it. Pinned
+ * for 260vh while the camera dollies slowly toward the planet.
+ *
+ * Pressing "Get Started" doesn't navigate — the very same Earth mesh glides
+ * smoothly across into a full right-side portrait while its name and
+ * description appear on the left. Arrows cycle through every planet.
+ */
+function EarthHero() {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
+  const wordmarkY = useTransform(scrollYProgress, [0, 1], [0, -160]);
+  const wordmarkOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+  const earth = bodyMap["earth"];
 
-function ProgressRail({ index }: { index: number }) {
+  const [mode, setMode] = useState<"hero" | "dossier">("hero");
+  const [focusId, setFocusId] = useState<BodyId>("earth");
+  const open = mode === "dossier";
+  const focusIdx = HERO_ORDER.indexOf(focusId);
+  const body = bodyMap[HERO_ORDER[focusIdx] ?? "earth"];
+
+  const go = (dir: 1 | -1) => {
+    setFocusId((cur) => {
+      const i = HERO_ORDER.indexOf(cur);
+      const next = Math.min(HERO_ORDER.length - 1, Math.max(0, i + dir));
+      return HERO_ORDER[next] ?? cur;
+    });
+  };
+
+  // lock page scroll while the dossier is open; the canvas stays put beneath it
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") go(1);
+      if (e.key === "ArrowLeft") go(-1);
+      if (e.key === "Escape") setMode("hero");
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
   return (
-    <div className="pointer-events-none absolute bottom-36 left-3 top-32 z-10 hidden flex-col items-center lg:flex">
-      <span className="label-tele text-[9px] tracking-widest text-muted-foreground">MISSION</span>
-      <div className="relative my-3 w-px flex-1 overflow-hidden bg-border-strong">
-        <div
-          className="absolute inset-x-0 top-0 bg-primary transition-all duration-500"
-          style={{ height: `${((index + 1) / SEQUENCE.length) * 100}%` }}
-        />
-      </div>
-      <div className="flex flex-col gap-3">
-        {SEQUENCE.map((id, i) => (
-          <span
-            key={id}
-            className={`label-tele text-[9px] transition-colors ${
-              i === index ? "text-primary" : "text-muted-foreground/40"
-            }`}
+    <section ref={ref} className="relative h-[260vh]">
+      <div className="sticky top-0 h-screen overflow-hidden">
+        {/* layer 1 — typography, rendered BEHIND the globe so the planet occludes it */}
+        {!open && (
+          <motion.div
+            style={{ y: wordmarkY, opacity: wordmarkOpacity }}
+            className="pointer-events-none absolute inset-x-0 top-[13vh] z-10 text-center"
           >
-            0{i + 1}
-          </span>
-        ))}
+            <p className="label-tele text-primary">SOL-III · Terrestrial planet — habitable</p>
+            <h1 className="wordmark mt-3 bg-gradient-to-b from-white via-white to-white/30 bg-clip-text font-display font-bold uppercase text-transparent">
+              Earth
+            </h1>
+            <p className="mx-auto mt-5 max-w-xl px-6 text-balance text-sm text-muted-foreground sm:text-base">
+              {CAPTIONS["earth"]}
+            </p>
+          </motion.div>
+        )}
+
+        {/* layer 2 — the planets themselves */}
+        <div className="absolute inset-0 z-20">
+          <ClientOnly>
+            <EarthScene mode={mode} focusId={open ? focusId : "earth"} spin={scrollYProgress} />
+          </ClientOnly>
+        </div>
+
+        {/* layer 3 — call to action floating over the planetary glow */}
+        {!open && (
+          <div className="pointer-events-none absolute inset-x-0 bottom-[15vh] z-40 flex justify-center">
+            <button
+              type="button"
+              onClick={() => {
+                setFocusId("earth");
+                setMode("dossier");
+              }}
+              className="pointer-events-auto inline-block"
+            >
+              <Cover className="px-7 py-3.5 text-sm font-semibold tracking-wide">Get Started</Cover>
+            </button>
+          </div>
+        )}
+
+        {/* bottom telemetry strip */}
+        {!open && (
+          <div className="absolute inset-x-0 bottom-0 z-40 border-t border-glass-edge bg-background/60 backdrop-blur-xl">
+            <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-8 gap-y-2 px-6 py-3 sm:grid-cols-5">
+              <Stat label="Radius" value={`${earth.metrics.radiusKm.toLocaleString()} km`} />
+              <Stat label="Gravity" value={`${earth.metrics.gravity} m/s²`} />
+              <Stat label="Day length" value={earth.metrics.dayLength} />
+              <Stat label="Orbital period" value={earth.metrics.orbitalPeriod} />
+              <Stat label="Moons" value={String(earth.metrics.moons)} />
+            </div>
+          </div>
+        )}
+
+        {/* dossier overlay — name + description on the left, planet on the right */}
+        <AnimatePresence>
+          {open && (
+            <motion.div
+              key="dossier"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.35 }}
+              className="fixed inset-0 z-[70]"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-black/10 lg:via-black/35" />
+
+              <button
+                type="button"
+                onClick={() => setMode("hero")}
+                aria-label="Back to hero"
+                className="glass-chip press absolute right-6 top-24 z-10 flex h-11 w-11 items-center justify-center rounded-full text-foreground"
+              >
+                <X className="h-5 w-5" />
+              </button>
+
+              <div className="relative mx-auto flex h-full max-w-7xl items-end px-6 pb-24 pt-28 lg:items-center lg:pb-16">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={focusId}
+                    initial={{ opacity: 0, x: -30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 22 }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                    className="w-full max-w-xl"
+                  >
+                    <p className="label-tele text-primary">
+                      {String(focusIdx + 1).padStart(2, "0")} /{" "}
+                      {String(HERO_ORDER.length).padStart(2, "0")} · {body.designation} ·{" "}
+                      {body.system}
+                    </p>
+                    <h2 className="mt-3 font-display text-[clamp(2.4rem,4.6vw,4rem)] font-semibold leading-none tracking-[-0.04em]">
+                      {body.name}
+                    </h2>
+                    <p className="mt-2 text-sm text-muted-foreground">{body.classification}</p>
+                    <p className="mt-5 text-balance text-sm leading-relaxed text-muted-foreground sm:text-base">
+                      {body.summary}
+                    </p>
+
+                    <div className="mt-7 flex flex-wrap gap-2.5">
+                      <Chip label="Gravity" value={`${body.metrics.gravity} m/s²`} />
+                      <Chip label="Day" value={body.metrics.dayLength} />
+                      <Chip label="Year" value={body.metrics.orbitalPeriod} />
+                      <Chip label="Moons" value={String(body.metrics.moons)} />
+                    </div>
+
+                    <div className="mt-9 flex flex-wrap items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => go(-1)}
+                        disabled={focusIdx === 0}
+                        aria-label="Previous planet"
+                        className="glass-chip press flex h-11 w-11 items-center justify-center rounded-full text-foreground disabled:opacity-30"
+                      >
+                        <ChevronLeft className="h-5 w-5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go(1)}
+                        disabled={focusIdx === HERO_ORDER.length - 1}
+                        aria-label="Next planet"
+                        className="glass-chip press flex h-11 w-11 items-center justify-center rounded-full text-foreground disabled:opacity-30"
+                      >
+                        <ChevronRight className="h-5 w-5" />
+                      </button>
+                      <Link
+                        to="/explorer/$body"
+                        params={{ body: focusId }}
+                        className="group ml-2 inline-flex items-center gap-2 text-sm font-medium text-primary transition-colors hover:text-foreground"
+                      >
+                        Open full profile
+                        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                      </Link>
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-      <span className="label-tele mt-3 text-[9px] tracking-widest text-muted-foreground">
-        ROUTE
-      </span>
+    </section>
+  );
+}
+
+function Chip({ label, value }: { label: string; value: string }) {
+  return (
+    <span className="glass-chip inline-flex items-baseline gap-1.5 rounded-full px-3.5 py-1.5">
+      <span className="label-tele">{label}</span>
+      <span className="text-xs font-medium text-foreground">{value}</span>
+    </span>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex flex-col">
+      <span className="label-tele">{label}</span>
+      <span className="mt-0.5 font-mono text-xs text-foreground/90 sm:text-sm">{value}</span>
     </div>
   );
 }
 
-function HeroReadout({ body }: { body: (typeof bodyMap)[keyof typeof bodyMap] }) {
+/**
+ * Section 2 — the pinned scroll rail through the rest of the solar system
+ * (every world except Earth), with depth-based cinematic parallax.
+ */
+function PlanetRail() {
+  const [focusIdx, setFocusIdx] = useState(RAIL_START);
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
+
+  useEffect(() => {
+    const unsub = scrollYProgress.on("change", (v) => {
+      const maxV = RAIL_ORDER.length - 1 - RAIL_START;
+      const i = Math.min(
+        RAIL_ORDER.length - 1,
+        Math.max(RAIL_START, Math.round(RAIL_START + v * maxV)),
+      );
+      setFocusIdx(i);
+    });
+    return () => unsub();
+  }, [scrollYProgress]);
+
+  const body = bodyMap[RAIL_ORDER[focusIdx] ?? "mars"];
+
   return (
-    <div className="pointer-events-auto hidden w-80 xl:block">
-      <div className="panel p-5">
-        <div className="label-tele flex items-center justify-between">
-          <span>Target readout</span>
-          <span className="text-primary">{body.designation}</span>
-        </div>
-        <div className="mt-1 font-display text-2xl font-semibold">{body.name}</div>
-        <dl className="mt-4 space-y-2.5">
-          <ReadoutRow label="Radius" value={`${body.metrics.radiusKm.toLocaleString()} km`} />
-          <ReadoutRow label="Gravity" value={`${body.metrics.gravity} m/s²`} />
-          <ReadoutRow
-            label="Surface T"
-            value={`${body.metrics.tempC[0]}…${body.metrics.tempC[1]} °C`}
-          />
-          <ReadoutRow label="Pressure" value={`${body.metrics.pressureBar} bar`} />
-          <ReadoutRow label="Escape v" value={`${body.metrics.escapeVelocity} km/s`} />
-          <ReadoutRow label="Atmosphere" value={body.metrics.atmosphere} />
-        </dl>
-        <div className="mt-4 border-t border-border pt-3">
-          <Link
-            to="/explorer/$body"
-            params={{ body: body.id }}
-            className="label-tele flex items-center justify-between text-[9px] text-primary hover:underline"
-          >
-            <span className="text-muted-foreground">AI analysis</span>
-            <span>OPEN INSTRUMENT →</span>
-          </Link>
-        </div>
-        <div className="label-tele mt-4 flex items-center gap-2 border-t border-border pt-3 text-[9px]">
-          <span className="h-1.5 w-1.5 animate-pulse-ring rounded-full bg-secondary" />
-          <span>Systems online</span>
-          <span className="ml-auto text-primary">DSP-4</span>
+    <section>
+      <div ref={ref} className="relative h-[480vh] border-t border-glass-edge/60">
+        <div className="sticky top-0 h-screen overflow-hidden bg-black">
+          <div className="absolute inset-0">
+            <ClientOnly>
+              <HeroScene spin={scrollYProgress} />
+            </ClientOnly>
+          </div>
+
+          {/* focused planet name + caption */}
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex flex-col items-center pt-[10vh] text-center">
+            <p className="label-tele">
+              {String(focusIdx + 1).padStart(2, "0")} / {String(RAIL_ORDER.length).padStart(2, "0")}{" "}
+              · The solar system
+            </p>
+            <h2 className="text-gradient mt-2 font-display text-[clamp(1.7rem,3.2vw,2.5rem)] font-semibold leading-none tracking-[-0.03em]">
+              {body.name}
+            </h2>
+            <p className="mt-3 max-w-xl px-6 text-balance text-sm text-muted-foreground sm:text-base">
+              {CAPTIONS[body.id]}
+            </p>
+            <Link
+              to="/explorer/$body"
+              params={{ body: body.id }}
+              className="label-tele pointer-events-auto mt-5 inline-flex items-center gap-1.5 text-[10px] text-primary transition-colors hover:text-foreground"
+            >
+              Explore {body.name} <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function ReadoutRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-baseline justify-between gap-3 border-b border-border pb-2.5 last:border-0 last:pb-0">
-      <span className="label-tele">{label}</span>
-      <span className="font-mono text-xs tabular-nums">{value}</span>
-    </div>
-  );
-}
-
-function Tele({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-baseline gap-2">
-      <span className="label-tele">{label}</span>
-      <span className="font-mono text-sm tabular-nums">{value}</span>
-    </div>
+    </section>
   );
 }
 
@@ -356,7 +404,7 @@ const CAPABILITIES = [
 
 function Capabilities() {
   return (
-    <section className="relative z-10 border-t border-border bg-background">
+    <section className="relative z-10 border-t border-glass-edge bg-background/60">
       <div className="mx-auto max-w-[1600px] px-6 py-28">
         <div className="max-w-2xl">
           <div className="flex items-center gap-3">
@@ -448,7 +496,7 @@ function MissionFocus() {
   }, []);
 
   return (
-    <section className="relative z-10 border-t border-border bg-background">
+    <section className="relative z-10 border-t border-glass-edge bg-background/60">
       <div className="mx-auto max-w-[1600px] px-6 py-28">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="max-w-2xl">
@@ -619,7 +667,10 @@ function MissionsSweep() {
   const x = useTransform(scrollYProgress, [0, 1], [0, -range]);
 
   return (
-    <section ref={ref} className="relative z-10 h-[280vh] border-t border-border bg-background">
+    <section
+      ref={ref}
+      className="relative z-10 h-[280vh] border-t border-glass-edge bg-background/60"
+    >
       <div className="sticky top-0 flex h-screen flex-col justify-center overflow-hidden">
         <div className="mx-auto w-full max-w-[1600px] px-6 pt-20">
           <div className="flex items-center gap-3">
@@ -733,7 +784,7 @@ const CHANGELOG = [
 
 function FaqChangelog() {
   return (
-    <section className="relative z-10 border-t border-border bg-background">
+    <section className="relative z-10 border-t border-glass-edge bg-background/60">
       <div className="mx-auto grid max-w-[1600px] gap-16 px-6 py-28 lg:grid-cols-2">
         <div>
           <div className="flex items-center gap-3">

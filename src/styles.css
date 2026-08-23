@@ -141,9 +141,9 @@
   /* Generous glass radius — the defining curve of the redesign. */
   --radius: 1.75rem;
 
-  /* Cinematic deep-space plate. Near-black with a cool blue-violet cast. */
-  --background: oklch(0.128 0.016 264);
-  --surface: oklch(0.16 0.018 264);
+  /* Complete black deep-space plate. */
+  --background: oklch(0 0 0);
+  --surface: oklch(0.07 0.008 268);
   --foreground: oklch(0.992 0.004 220);
 
   /* Translucent glass, not solid card. Heavy backdrop blur does the work. */
@@ -227,7 +227,9 @@
     /* Global scale: lower for a more "zoomed out" instrument layout.
        All Tailwind sizing (rem) scales off this value. */
     font-size: 15px;
-    scroll-behavior: smooth;
+    /* NOTE: no `scroll-behavior: smooth` here. Root-level smooth scrolling
+       makes mouse-wheel / trackpad scrolling feel heavy and laggy in
+       Chromium. Anchors keep native instant jumps. */
     -webkit-font-smoothing: antialiased;
   }
 
@@ -267,18 +269,30 @@
 
 /* --- Glass instrument utilities --- */
 
-/* The defining surface: translucent glass with a specular top edge. */
+/*
+ * Liquid glass: every surface is a translucent, refracting pane — heavy
+ * backdrop blur + saturation, a specular top edge, a soft inner rim light
+ * and a faint colored bloom. No solid fills anywhere.
+ */
+
+/* The defining surface: translucent liquid glass with a specular top edge. */
 @utility panel {
   position: relative;
-  background: linear-gradient(
-    180deg,
-    var(--glass-fill-strong),
-    var(--glass-fill)
-  );
+  background:
+    radial-gradient(
+      120% 90% at 18% 0%,
+      color-mix(in oklab, white 7%, transparent),
+      transparent 55%
+    ),
+    linear-gradient(180deg, var(--glass-fill-strong), var(--glass-fill));
   border: 1px solid var(--glass-edge-strong);
   border-radius: var(--radius-2xl);
   backdrop-filter: blur(28px) saturate(180%);
-  box-shadow: var(--shadow-glass);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  box-shadow:
+    inset 0 1px 0 0 color-mix(in oklab, white 12%, transparent),
+    inset 0 -1px 0 0 color-mix(in oklab, var(--primary) 5%, transparent),
+    var(--shadow-glass);
   &::after {
     content: "";
     position: absolute;
@@ -287,21 +301,30 @@
     background: linear-gradient(
       90deg,
       transparent,
-      color-mix(in oklab, var(--foreground) 16%, transparent),
+      color-mix(in oklab, var(--foreground) 18%, transparent),
       transparent
     );
-    opacity: 0.7;
+    opacity: 0.8;
     pointer-events: none;
   }
 }
 
 @utility panel-flat {
   position: relative;
-  background: var(--glass-fill);
+  background:
+    radial-gradient(
+      110% 80% at 20% 0%,
+      color-mix(in oklab, white 4%, transparent),
+      transparent 60%
+    ),
+    var(--glass-fill);
   border: 1px solid var(--glass-edge);
   border-radius: var(--radius-xl);
-  backdrop-filter: blur(18px) saturate(160%);
-  box-shadow: 0 1px 0 0 color-mix(in oklab, var(--foreground) 6%, transparent) inset;
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  box-shadow:
+    inset 0 1px 0 0 color-mix(in oklab, var(--foreground) 8%, transparent),
+    0 16px 44px -24px rgb(0 0 0 / 0.6);
 }
 
 /* Glass pill — nav links, chips, small controls. */
@@ -309,16 +332,44 @@
   border-width: 1px;
   border-style: solid;
   border-color: var(--glass-edge);
-  background: var(--glass-fill);
-  backdrop-filter: blur(20px) saturate(160%);
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, white 5%, transparent),
+    transparent
+  );
+  background-color: var(--glass-fill);
+  backdrop-filter: blur(22px) saturate(170%);
+  -webkit-backdrop-filter: blur(22px) saturate(170%);
+  box-shadow: inset 0 1px 0 0 color-mix(in oklab, white 9%, transparent);
   transition:
     border-color 0.3s ease,
     background 0.3s ease,
+    box-shadow 0.3s ease,
     color 0.3s ease;
   &:hover {
     border-color: var(--glass-edge-strong);
-    background: var(--glass-fill-strong);
+    background-color: var(--glass-fill-strong);
+    box-shadow:
+      inset 0 1px 0 0 color-mix(in oklab, white 14%, transparent),
+      0 10px 34px -18px color-mix(in oklab, var(--primary) 45%, transparent);
   }
+}
+
+/* The floating navigation bar — the purest liquid glass surface on the site. */
+@utility liquid-bar {
+  background:
+    radial-gradient(
+      130% 140% at 12% 0%,
+      color-mix(in oklab, var(--primary) 6%, transparent),
+      transparent 50%
+    ),
+    linear-gradient(180deg, var(--glass-fill-strong), var(--glass-fill));
+  backdrop-filter: blur(30px) saturate(190%);
+  -webkit-backdrop-filter: blur(30px) saturate(190%);
+  box-shadow:
+    inset 0 1px 0 0 color-mix(in oklab, white 13%, transparent),
+    inset 0 -1px 0 0 color-mix(in oklab, white 4%, transparent),
+    var(--shadow-glass);
 }
 
 @utility label-tele {
@@ -366,6 +417,13 @@
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+/* Giant hero wordmark — the oversized planet name behind the globe. */
+@utility wordmark {
+  font-size: clamp(4.5rem, 17vw, 15rem);
+  line-height: 0.82;
+  letter-spacing: -0.045em;
 }
 
 /* Cinematic editorial accent — serif italic for documentary ledes. */
@@ -535,20 +593,16 @@
   }
 }
 
-/* --- Film grain over the whole instrument --- */
-/* Static PNG grain (pre-rasterized, no SVG filters). Promoted to its own
-   composited layer so scrolling never re-rasterizes it. */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 999;
-  pointer-events: none;
-  opacity: 0.06;
-  background-image: url("/textures/grain.png");
-  background-size: 256px 256px;
-  transform: translateZ(0);
-  will-change: transform;
+/* --- Complete black backdrop (whole site) ---
+   Pure black everywhere — no grain, no dots, no image. */
+body::before,
+body::after {
+  content: none;
+}
+
+html,
+body {
+  background-color: #000;
 }
 
 @media (hover: none) {
