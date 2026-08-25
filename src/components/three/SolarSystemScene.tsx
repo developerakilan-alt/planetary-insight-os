@@ -193,7 +193,7 @@ export default function SolarSystemScene({
       style={{ position: "absolute", inset: 0 }}
     >
       <Suspense fallback={null}>
-        <ambientLight intensity={0.25} />
+        <ambientLight intensity={0.5} />
         <MilkyWay />
         <Starfield count={2000} radius={110} />
         <LivingSun />

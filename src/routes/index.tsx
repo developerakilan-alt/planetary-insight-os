@@ -1,6 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
-import { lazy, useEffect, useMemo, useRef, useState } from "react";
+import {
+  lazy,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import {
   ArrowRight,
   ChevronLeft,
@@ -67,10 +76,24 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
+  // Dossier state lives here so both entry points can drive the very same
+  // right-side portrait: "Get Started" (Earth) and every "Explore …" action
+  // in the solar-system rail below.
+  const [mode, setMode] = useState<"hero" | "dossier">("hero");
+  const [focusId, setFocusId] = useState<BodyId>("earth");
+
+  const explore = (id: BodyId) => {
+    // The planetary canvas is pinned to the very top of the page — jump
+    // there first so the glide-to-the-right plays on screen.
+    window.scrollTo({ top: 0 });
+    setFocusId(id);
+    setMode("dossier");
+  };
+
   return (
     <>
-      <EarthHero />
-      <PlanetRail />
+      <EarthHero mode={mode} setMode={setMode} focusId={focusId} setFocusId={setFocusId} />
+      <PlanetRail onExplore={explore} />
       <MissionTicker />
       <Capabilities />
       <MissionFocus />
@@ -89,26 +112,37 @@ function Landing() {
  * smoothly across into a full right-side portrait while its name and
  * description appear on the left. Arrows cycle through every planet.
  */
-function EarthHero() {
+function EarthHero({
+  mode,
+  setMode,
+  focusId,
+  setFocusId,
+}: {
+  mode: "hero" | "dossier";
+  setMode: (m: "hero" | "dossier") => void;
+  focusId: BodyId;
+  setFocusId: Dispatch<SetStateAction<BodyId>>;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   const wordmarkY = useTransform(scrollYProgress, [0, 1], [0, -160]);
   const wordmarkOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
   const earth = bodyMap["earth"];
 
-  const [mode, setMode] = useState<"hero" | "dossier">("hero");
-  const [focusId, setFocusId] = useState<BodyId>("earth");
   const open = mode === "dossier";
   const focusIdx = HERO_ORDER.indexOf(focusId);
   const body = bodyMap[HERO_ORDER[focusIdx] ?? "earth"];
 
-  const go = (dir: 1 | -1) => {
-    setFocusId((cur) => {
-      const i = HERO_ORDER.indexOf(cur);
-      const next = Math.min(HERO_ORDER.length - 1, Math.max(0, i + dir));
-      return HERO_ORDER[next] ?? cur;
-    });
-  };
+  const go = useCallback(
+    (dir: 1 | -1) => {
+      setFocusId((cur) => {
+        const i = HERO_ORDER.indexOf(cur);
+        const next = Math.min(HERO_ORDER.length - 1, Math.max(0, i + dir));
+        return HERO_ORDER[next] ?? cur;
+      });
+    },
+    [setFocusId],
+  );
 
   // lock page scroll while the dossier is open; the canvas stays put beneath it
   useEffect(() => {
@@ -129,7 +163,7 @@ function EarthHero() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
+  }, [open, go, setMode]);
 
   return (
     <section ref={ref} className="relative h-[260vh]">
@@ -299,7 +333,7 @@ function Stat({ label, value }: { label: string; value: string }) {
  * Section 2 — the pinned scroll rail through the rest of the solar system
  * (every world except Earth), with depth-based cinematic parallax.
  */
-function PlanetRail() {
+function PlanetRail({ onExplore }: { onExplore: (id: BodyId) => void }) {
   const [focusIdx, setFocusIdx] = useState(RAIL_START);
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
@@ -340,13 +374,13 @@ function PlanetRail() {
             <p className="mt-3 max-w-xl px-6 text-balance text-sm text-muted-foreground sm:text-base">
               {CAPTIONS[body.id]}
             </p>
-            <Link
-              to="/explorer/$body"
-              params={{ body: body.id }}
+            <button
+              type="button"
+              onClick={() => onExplore(body.id)}
               className="label-tele pointer-events-auto mt-5 inline-flex items-center gap-1.5 text-[10px] text-primary transition-colors hover:text-foreground"
             >
               Explore {body.name} <ArrowRight className="h-3 w-3" />
-            </Link>
+            </button>
           </div>
         </div>
       </div>

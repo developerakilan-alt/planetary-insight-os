@@ -166,16 +166,6 @@ function Missions() {
                   </span>
                 ))}
               </div>
-              {active.target !== "outer-system" && active.target !== "deep-field" && (
-                <Link
-                  to="/explorer/$body"
-                  params={{ body: active.target }}
-                  search={{ traverse: active.id }}
-                  className="mt-4 inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
-                >
-                  <Globe2 className="h-4 w-4" /> Trace this path on the 3D globe
-                </Link>
-              )}
             </div>
           )}
         </div>

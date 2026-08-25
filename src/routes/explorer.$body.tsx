@@ -1,26 +1,28 @@
-import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { lazy, useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import {
-  ArrowLeft,
   Bookmark,
   Columns2,
   Crosshair,
   Database,
   Download,
   ExternalLink,
+  FlaskConical,
   MapPin,
   Share2,
   Sparkles,
+  Wind,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { Sidebar, type SidebarLinkItem } from "@/components/ui/animated-sidebar";
 import { ClientOnly } from "@/components/ClientOnly";
 import { Shimmer } from "@/components/motion/Shimmer";
 import { AtmosphereChart } from "@/components/AtmosphereChart";
 import { GlobeControlPanel, MobileGlobeControls } from "@/components/globe/GlobeControls";
 import { BODIES, getBody, type Body, type BodyId, type Landmark } from "@/data/bodies";
-import { MISSIONS, type Mission } from "@/data/missions";
 import { getAtmosphere } from "@/data/atmosphere";
 import { PLANET_CONFIGS, textureUrl } from "@/data/planets/configs";
 import type {
@@ -36,27 +38,15 @@ import { formatLat, formatLon, nearestFeature } from "@/lib/geo";
 import { cacheTexturePack, haptic, preloadImages, whenIdle } from "@/lib/offline";
 import { useDeviceQuality } from "@/hooks/use-device-quality";
 import { AiSiteReview } from "@/components/AiSiteReview";
-import { CompareGlobe, ComparePicker } from "@/components/CompareGlobe";
 import { SavedLibrary } from "@/components/SavedLibrary";
-import { SonifyToggle } from "@/components/SonifyToggle";
 import { addItem, getItems, hasItem, removeItem } from "@/lib/saved";
 import { buildSiteAnalysisMarkdown, downloadTextFile } from "@/lib/report";
 
 const ScientificGlobe = lazy(() => import("@/components/three/ScientificGlobe"));
 
-const TRAVERSE_COLORS: Record<Mission["type"], string> = {
-  lander: "#F5C542",
-  orbiter: "#4FD1FF",
-  flyby: "#9B8CFF",
-  rover: "#7EF9C6",
-  crewed: "#6EE7B7",
-  observatory: "#C084FC",
-};
-
 const searchSchema = z.object({
   lat: z.string().optional(),
   lon: z.string().optional(),
-  traverse: z.string().optional(),
 });
 
 export const Route = createFileRoute("/explorer/$body")({
@@ -106,9 +96,19 @@ function PlanetDashboard() {
   const [pick, setPick] = useState<{ lat: number; lon: number } | null>(null);
   const [gestureFocus, setGestureFocus] = useState<{ lat: number; lon: number } | null>(null);
   const [downloadingPack, setDownloadingPack] = useState(false);
-  const [compare, setCompare] = useState<BodyId | null>(null);
+  const [section, setSection] = useState<SectionId | null>(null);
+  const [railOpen, setRailOpen] = useState(false);
 
   const effectiveQuality: Quality = quality === "auto" ? autoTier : quality;
+
+  const handleRailClick = (link: SidebarLinkItem) => {
+    const id = link.href.slice(1) as SectionId;
+    if (id === "compare") {
+      void navigate({ to: "/compare", search: { a: body.id } });
+      return;
+    }
+    setSection((cur) => (cur === id ? null : id));
+  };
 
   useEffect(() => {
     if (!availableModes.includes(mode)) setMode(availableModes[0] ?? "natural");
@@ -145,55 +145,16 @@ function PlanetDashboard() {
   useEffect(() => {
     setGestureFocus(null);
     setPick(null);
-    setCompare(null);
+    setSection(null);
   }, [body.id]);
 
   const focus = useMemo(() => {
     if (search.lat && search.lon) return { lat: Number(search.lat), lon: Number(search.lon) };
-    if (search.traverse) {
-      const m = MISSIONS.find((x) => x.id === search.traverse);
-      if (m?.traverse?.points.length) {
-        const p = m.traverse.points[0]!;
-        return { lat: p.lat, lon: p.lon };
-      }
-    }
     return gestureFocus;
-  }, [search.lat, search.lon, search.traverse, gestureFocus]);
+  }, [search.lat, search.lon, gestureFocus]);
 
   const analysis = pick ? analyseSite(body, pick.lat, pick.lon) : null;
-  const missions = useMemo(() => MISSIONS.filter((m) => m.target === body.id), [body.id]);
   const atmosphereProfile = getAtmosphere(body.id);
-
-  const traverses = useMemo(
-    () =>
-      missions
-        .filter((m) => m.traverse && m.traverse.points.length > 0)
-        .map((m) => ({
-          id: m.id,
-          label: m.traverse!.label,
-          color: TRAVERSE_COLORS[m.type] ?? "#4FD1FF",
-          points: m.traverse!.points,
-        })),
-    [missions],
-  );
-
-  const sonifyValues = useMemo(
-    () => [
-      { label: "Radius", value: body.metrics.radiusKm, range: [0, 72000] as [number, number] },
-      { label: "Gravity", value: body.metrics.gravity, range: [0, 26] as [number, number] },
-      {
-        label: "Temperature",
-        value: (body.metrics.tempC[0] + body.metrics.tempC[1]) / 2,
-        range: [-240, 460] as [number, number],
-      },
-      {
-        label: "Pressure",
-        value: Math.max(1e-6, body.metrics.pressureBar),
-        range: [1e-6, 92] as [number, number],
-      },
-    ],
-    [body],
-  );
 
   const saveAnalysis = () => {
     if (!analysis) return;
@@ -248,6 +209,7 @@ function PlanetDashboard() {
     haptic(6);
     setPick({ lat, lon });
     setGestureFocus({ lat, lon });
+    setSection("location");
   };
 
   const handleDoubleTap = (lat: number, lon: number) => {
@@ -358,49 +320,20 @@ function PlanetDashboard() {
   ];
 
   return (
-    <div className="mx-auto max-w-[1600px] px-4 pb-16 pt-6 lg:px-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <Link
-          to="/explorer"
-          className="glass-chip flex h-9 items-center gap-2 rounded-full px-3 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" /> Orbital chart
-        </Link>
-        <div className="flex gap-1 overflow-x-auto">
-          {BODIES.map((b) => (
-            <Link
-              key={b.id}
-              to="/explorer/$body"
-              params={{ body: b.id }}
-              className="rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground data-[status=active]:bg-glass-fill-strong data-[status=active]:text-foreground"
-            >
-              {b.name}
-            </Link>
-          ))}
-        </div>
-      </div>
+    <div className="mx-auto flex w-full max-w-[1720px] items-start gap-5 px-4 pb-16 pt-24 lg:px-6">
+      {/* Navigation rail — left side */}
+      <Sidebar
+        open={railOpen}
+        setOpen={setRailOpen}
+        links={RAIL_LINKS}
+        activeLabel={section ?? undefined}
+        onLinkClick={handleRailClick}
+        logo={<RailLogo expanded={railOpen} />}
+      />
 
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        <div className="flex items-center gap-2 rounded-full border border-glass-edge bg-glass-fill px-3 py-1.5 backdrop-blur-xl">
-          <Columns2 className="h-3.5 w-3.5 text-primary" />
-          <ComparePicker current={body.id} onSelect={setCompare} />
-        </div>
-        <SonifyToggle label="Sonify metrics" values={sonifyValues} />
-        {search.traverse && (
-          <span className="label-tele rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-[10px] text-primary">
-            Traverse: {MISSIONS.find((m) => m.id === search.traverse)?.name ?? "mission"} plotted
-          </span>
-        )}
-        {traverses.length > 0 && !search.traverse && (
-          <span className="label-tele rounded-full border border-border px-3 py-1.5 text-[10px] text-muted-foreground">
-            {traverses.length} rover path{traverses.length === 1 ? "" : "s"} shown
-          </span>
-        )}
-      </div>
-
-      <div className="mt-6 grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
-        {/* Globe */}
-        <div className="panel relative h-[64vh] min-h-[460px] overflow-hidden">
+      <div className="min-w-0 flex-1">
+        {/* Sol-system view — full page */}
+        <div className="panel relative h-[72vh] min-h-[520px] overflow-hidden">
           <ClientOnly
             fallback={
               <div className="absolute inset-0">
@@ -424,8 +357,6 @@ function PlanetDashboard() {
                 lighting,
               }}
               landmarks={body.landmarks}
-              missions={missions}
-              traverses={traverses}
               pick={pick}
               onPick={handlePick}
               focus={focus}
@@ -476,241 +407,276 @@ function PlanetDashboard() {
           )}
         </div>
 
-        {/* Right column */}
-        <div className="space-y-4">
-          <div className="panel p-6">
-            <div className="label-tele">Scientific record</div>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{body.summary}</p>
-            <dl className="mt-5 divide-y divide-border">
-              {metrics.map(([k, v]) => (
-                <div key={k} className="flex items-start justify-between gap-6 py-2.5">
-                  <dt className="label-tele shrink-0">{k}</dt>
-                  <dd className="text-right font-mono text-[13px] leading-snug">{v}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-
-          {atmosphereProfile && <AtmosphereChart profile={atmosphereProfile} />}
-
-          <AnimatePresence mode="wait">
-            {pick && (
-              <motion.div
-                key={`loc-${pick.lat.toFixed(2)}-${pick.lon.toFixed(2)}`}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                className="panel p-6"
-              >
-                <LocationPanel
-                  body={body}
-                  config={config}
-                  missions={missions}
-                  lat={pick.lat}
-                  lon={pick.lon}
-                  onClose={() => setPick(null)}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {!pick && (
+        {/* Detail sections — revealed one at a time from the Dashboard menu */}
+        <div className="mt-4 space-y-4">
+          {section === "scientific" && (
             <div className="panel p-6">
               <div className="label-tele flex items-center gap-2">
-                <Sparkles className="h-3.5 w-3.5 text-primary" /> Location inspector
+                <FlaskConical className="h-3.5 w-3.5 text-primary" /> Scientific record
               </div>
-              <p className="mt-3 text-sm text-muted-foreground">
-                Select any coordinate on the globe to read sampled surface elevation, the nearest
-                named feature and which missions touched down nearby.
-                {config.elevation ? ` Elevation is sampled from ${config.elevation.dataset}.` : ""}
-              </p>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{body.summary}</p>
+              <dl className="mt-5 divide-y divide-border">
+                {metrics.map(([k, v]) => (
+                  <div key={k} className="flex items-start justify-between gap-6 py-2.5">
+                    <dt className="label-tele shrink-0">{k}</dt>
+                    <dd className="text-right font-mono text-[13px] leading-snug">{v}</dd>
+                  </div>
+                ))}
+              </dl>
             </div>
           )}
 
-          {analysis && (
-            <motion.div
-              key={`analysis-${analysis.lat.toFixed(2)}`}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              className="panel p-6"
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="label-tele">Landing site analyzer</div>
-                  <div className="mt-1 font-mono text-sm">
-                    {analysis.lat.toFixed(2)}° , {analysis.lon.toFixed(2)}°
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div
-                    className="font-display text-4xl font-semibold tabular-nums"
-                    style={{
-                      color:
-                        analysis.score >= 78
-                          ? "var(--secondary)"
-                          : analysis.score >= 62
-                            ? "var(--primary)"
-                            : analysis.score >= 45
-                              ? "var(--warning)"
-                              : "var(--destructive)",
-                    }}
-                  >
-                    {analysis.score}
-                  </div>
-                  <div className="label-tele">{analysis.verdict}</div>
-                </div>
-              </div>
-
-              <div className="mt-5 space-y-3">
-                <Bar label="Terrain safety" v={analysis.terrainSafety} />
-                <Bar label="Rock density" v={analysis.rockDensity} invert />
-                <Bar label="Water-ice probability" v={analysis.iceProbability} />
-                <Bar label="Scientific importance" v={analysis.scientificValue} />
-                <Bar label="Landing difficulty" v={analysis.landingDifficulty} invert />
-                <Bar label="Radiation risk" v={analysis.radiationRisk} invert />
-              </div>
-
-              <div className="mt-5 grid grid-cols-2 gap-3">
-                <div className="panel-flat p-3">
-                  <div className="label-tele">Elevation</div>
-                  <div className="mt-1 font-mono text-sm">{analysis.elevationM} m</div>
-                </div>
-                <div className="panel-flat p-3">
-                  <div className="label-tele">Mean slope</div>
-                  <div className="mt-1 font-mono text-sm">{analysis.slopeDeg}°</div>
-                </div>
-              </div>
-
-              <div className="mt-5 flex flex-wrap gap-2">
-                <button
-                  onClick={saveAnalysis}
-                  className="flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs text-primary transition-colors hover:bg-primary/15"
-                >
-                  <Bookmark className="h-3.5 w-3.5" /> Save to library
-                </button>
-                <button
-                  onClick={downloadAnalysis}
-                  className="flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  <Download className="h-3.5 w-3.5" /> Report
-                </button>
-              </div>
-
-              <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
-                {analysis.recommendation}
-              </p>
-
-              <AiSiteReview body={body} analysis={analysis} />
-
-              <p className="label-tele mt-3 text-[9px]">
-                The landing-score model is an illustrative approximation, not a mission-planning
-                tool.
-              </p>
-            </motion.div>
-          )}
-
-          <div className="panel p-6">
-            <div className="label-tele mb-4">Named surface features</div>
-            <div className="space-y-2">
-              {body.landmarks.map((l: Landmark) => (
-                <div key={l.name} className="flex items-center gap-1">
-                  <button
-                    onClick={() =>
-                      navigate({
-                        to: "/explorer/$body",
-                        params: { body: body.id },
-                        search: { lat: String(l.lat), lon: String(l.lon) },
-                      })
-                    }
-                    className="flex min-w-0 flex-1 items-start gap-3 rounded-xl border border-glass-edge bg-glass-fill p-3 text-left transition-colors hover:border-glass-edge-strong"
-                  >
-                    <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                    <span>
-                      <span className="block text-sm font-medium">{l.name}</span>
-                      <span className="block text-xs text-muted-foreground">{l.note}</span>
-                      <span className="label-tele mt-1 block text-[9px]">
-                        {formatLat(l.lat)} · {formatLon(l.lon)}
-                      </span>
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => toggleLandmark(l)}
-                    aria-label={`Bookmark ${l.name}`}
-                    className="shrink-0 rounded-full border border-border p-2 text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
-                  >
-                    <Bookmark className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {missions.length > 0 && (
+          {section === "points" && (
             <div className="panel p-6">
-              <div className="label-tele mb-4">Missions at this body</div>
-              <div className="space-y-3">
-                {missions.map((m) => (
-                  <div key={m.id} className="flex items-center justify-between gap-4">
-                    <div>
-                      <div className="text-sm font-medium">{m.name}</div>
-                      <div className="label-tele text-[9px]">{m.agency}</div>
-                    </div>
-                    <span className="label-tele shrink-0">{m.year}</span>
+              <div className="label-tele mb-4">Selected points · named surface features</div>
+              <div className="grid gap-2 md:grid-cols-2">
+                {body.landmarks.map((l: Landmark) => (
+                  <div key={l.name} className="flex items-center gap-1">
+                    <button
+                      onClick={() =>
+                        navigate({
+                          to: "/explorer/$body",
+                          params: { body: body.id },
+                          search: { lat: String(l.lat), lon: String(l.lon) },
+                        })
+                      }
+                      className="flex min-w-0 flex-1 items-start gap-3 rounded-xl border border-glass-edge bg-glass-fill p-3 text-left transition-colors hover:border-glass-edge-strong"
+                    >
+                      <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                      <span>
+                        <span className="block text-sm font-medium">{l.name}</span>
+                        <span className="block text-xs text-muted-foreground">{l.note}</span>
+                        <span className="label-tele mt-1 block text-[9px]">
+                          {formatLat(l.lat)} · {formatLon(l.lon)}
+                        </span>
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => toggleLandmark(l)}
+                      aria-label={`Bookmark ${l.name}`}
+                      className="shrink-0 rounded-full border border-border p-2 text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
+                    >
+                      <Bookmark className="h-3.5 w-3.5" />
+                    </button>
                   </div>
                 ))}
               </div>
-              <Link
-                to="/missions"
-                className="mt-5 inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
-              >
-                Open mission archive
-              </Link>
             </div>
           )}
 
-          <ProvenancePanel
-            title={config.provenance.title}
-            rows={config.provenance.rows}
-            viewSourceUrl={config.provenance.viewSourceUrl}
-            disclaimer={config.provenance.disclaimer}
-            notes={config.notes}
-          />
+          {section === "location" && (
+            <AnimatePresence mode="wait">
+              {pick ? (
+                <motion.div
+                  key={`loc-${pick.lat.toFixed(2)}-${pick.lon.toFixed(2)}`}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                  className="panel p-6"
+                >
+                  <LocationPanel
+                    body={body}
+                    config={config}
+                    lat={pick.lat}
+                    lon={pick.lon}
+                    onClose={() => setPick(null)}
+                  />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="loc-empty"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                  className="panel p-6"
+                >
+                  <div className="label-tele flex items-center gap-2">
+                    <Crosshair className="h-3.5 w-3.5 text-primary" /> Location inspector
+                  </div>
+                  <p className="mt-3 text-sm text-muted-foreground">
+                    Select any coordinate on the globe to read sampled surface elevation and the
+                    nearest named feature.
+                    {config.elevation
+                      ? ` Elevation is sampled from ${config.elevation.dataset}.`
+                      : ""}
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          )}
 
-          <SavedLibrary />
+          {section === "analyzer" &&
+            (analysis ? (
+              <motion.div
+                key={`analysis-${analysis.lat.toFixed(2)}`}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                className="panel p-6"
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="label-tele">Landing site analyzer</div>
+                    <div className="mt-1 font-mono text-sm">
+                      {analysis.lat.toFixed(2)}° , {analysis.lon.toFixed(2)}°
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div
+                      className="font-display text-4xl font-semibold tabular-nums"
+                      style={{
+                        color:
+                          analysis.score >= 78
+                            ? "var(--secondary)"
+                            : analysis.score >= 62
+                              ? "var(--primary)"
+                              : analysis.score >= 45
+                                ? "var(--warning)"
+                                : "var(--destructive)",
+                      }}
+                    >
+                      {analysis.score}
+                    </div>
+                    <div className="label-tele">{analysis.verdict}</div>
+                  </div>
+                </div>
+
+                <div className="mt-5 space-y-3">
+                  <Bar label="Terrain safety" v={analysis.terrainSafety} />
+                  <Bar label="Rock density" v={analysis.rockDensity} invert />
+                  <Bar label="Water-ice probability" v={analysis.iceProbability} />
+                  <Bar label="Scientific importance" v={analysis.scientificValue} />
+                  <Bar label="Landing difficulty" v={analysis.landingDifficulty} invert />
+                  <Bar label="Radiation risk" v={analysis.radiationRisk} invert />
+                </div>
+
+                <div className="mt-5 grid grid-cols-2 gap-3">
+                  <div className="panel-flat p-3">
+                    <div className="label-tele">Elevation</div>
+                    <div className="mt-1 font-mono text-sm">{analysis.elevationM} m</div>
+                  </div>
+                  <div className="panel-flat p-3">
+                    <div className="label-tele">Mean slope</div>
+                    <div className="mt-1 font-mono text-sm">{analysis.slopeDeg}°</div>
+                  </div>
+                </div>
+
+                <div className="mt-5 flex flex-wrap gap-2">
+                  <button
+                    onClick={saveAnalysis}
+                    className="flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs text-primary transition-colors hover:bg-primary/15"
+                  >
+                    <Bookmark className="h-3.5 w-3.5" /> Save to library
+                  </button>
+                  <button
+                    onClick={downloadAnalysis}
+                    className="flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <Download className="h-3.5 w-3.5" /> Report
+                  </button>
+                </div>
+
+                <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
+                  {analysis.recommendation}
+                </p>
+
+                <AiSiteReview body={body} analysis={analysis} />
+
+                <p className="label-tele mt-3 text-[9px]">
+                  The landing-score model is an illustrative approximation, not a mission-planning
+                  tool.
+                </p>
+              </motion.div>
+            ) : (
+              <div className="panel p-6">
+                <div className="label-tele flex items-center gap-2">
+                  <Sparkles className="h-3.5 w-3.5 text-primary" /> Landing site analyzer
+                </div>
+                <p className="mt-3 text-sm text-muted-foreground">
+                  Select any coordinate on the globe to score terrain safety, slope, ice probability
+                  and radiation risk for a soft landing.
+                </p>
+              </div>
+            ))}
+
+          {section === "provenance" && (
+            <ProvenancePanel
+              title={config.provenance.title}
+              rows={config.provenance.rows}
+              viewSourceUrl={config.provenance.viewSourceUrl}
+              disclaimer={config.provenance.disclaimer}
+              notes={config.notes}
+            />
+          )}
+
+          {section === "library" && <SavedLibrary />}
+
+          {section === "atmosphere" && atmosphereProfile && (
+            <AtmosphereChart profile={atmosphereProfile} />
+          )}
         </div>
       </div>
-
-      <AnimatePresence>
-        {compare && (
-          <motion.div
-            key={`compare-${body.id}-${compare}`}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-4"
-          >
-            <CompareGlobe aId={body.id} bId={compare} />
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
+  );
+}
+
+type SectionId =
+  | "scientific"
+  | "points"
+  | "location"
+  | "analyzer"
+  | "provenance"
+  | "library"
+  | "compare"
+  | "atmosphere";
+
+const RAIL_SECTIONS: { id: SectionId; label: string; icon: LucideIcon }[] = [
+  { id: "scientific", label: "Scientific record", icon: FlaskConical },
+  { id: "points", label: "Selected points", icon: MapPin },
+  { id: "location", label: "Location inspector", icon: Crosshair },
+  { id: "analyzer", label: "Landing site analyzer", icon: Sparkles },
+  { id: "atmosphere", label: "Atmospheric profile", icon: Wind },
+  { id: "compare", label: "Planet comparison", icon: Columns2 },
+  { id: "provenance", label: "Data provenance", icon: Database },
+  { id: "library", label: "Saved library", icon: Bookmark },
+];
+
+const RAIL_LINKS: SidebarLinkItem[] = RAIL_SECTIONS.map((s) => ({
+  label: s.label,
+  href: `#${s.id}`,
+  icon: <s.icon className="h-4.5 w-4.5" />,
+}));
+
+function RailLogo({ expanded }: { expanded: boolean }) {
+  return (
+    <span className="flex items-center gap-2.5 overflow-hidden px-1 py-1">
+      <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-primary/40 bg-primary/10">
+        <span className="h-2 w-2 rounded-full bg-primary shadow-[0_0_10px_2px_color-mix(in_oklab,var(--primary)_60%,transparent)]" />
+      </span>
+      {expanded && (
+        <motion.span
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="label-tele whitespace-nowrap text-[10px]"
+        >
+          Mission console
+        </motion.span>
+      )}
+    </span>
   );
 }
 
 function LocationPanel({
   body,
   config,
-  missions,
   lat,
   lon,
   onClose,
 }: {
   body: Body;
   config: PlanetVisualConfig;
-  missions: Mission[];
   lat: number;
   lon: number;
   onClose: () => void;
@@ -721,10 +687,6 @@ function LocationPanel({
   const feature = useMemo(
     () => nearestFeature(lat, lon, body.landmarks, 14),
     [body.landmarks, lat, lon],
-  );
-  const nearby = useMemo(
-    () => missions.filter((m) => m.site && dist(m.site.lat, m.site.lon, lat, lon) <= 12),
-    [missions, lat, lon],
   );
 
   useEffect(() => {
@@ -808,25 +770,6 @@ function LocationPanel({
           <div className="label-tele">No named feature within 14° of this point.</div>
         )}
       </div>
-
-      <div className="mt-4">
-        <div className="label-tele mb-2">Missions within 12°</div>
-        {nearby.length > 0 ? (
-          <div className="space-y-2">
-            {nearby.map((m) => (
-              <div
-                key={m.id}
-                className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2"
-              >
-                <span className="text-sm">{m.name}</span>
-                <span className="label-tele shrink-0">{m.year}</span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="label-tele">No mission sites within 12° of this point.</div>
-        )}
-      </div>
     </>
   );
 }
@@ -836,14 +779,6 @@ function textureUrlH(config: PlanetVisualConfig): string {
   return src.single
     ? `/textures/${config.planetId}/${src.stem}.${src.ext ?? "jpg"}`
     : `/textures/${config.planetId}/${src.stem}_H.jpg`;
-}
-
-function dist(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const p1 = ((90 - lat1) * Math.PI) / 180;
-  const p2 = ((90 - lat2) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const c = Math.sin(p1) * Math.sin(p2) * Math.cos(dLon) + Math.cos(p1) * Math.cos(p2);
-  return (Math.acos(Math.max(-1, Math.min(1, c))) * 180) / Math.PI;
 }
 
 function ProvenancePanel({

@@ -380,7 +380,7 @@ export const PLANET_CONFIGS: Record<BodyId, PlanetVisualConfig> = {
       sourceUrl:
         "https://astrogeology.usgs.gov/search/map/Mars/Global_remote_sensing/MOLA_megt_global",
     }),
-    atmosphere: { color: "#c0563a", intensity: 0.65, scale: 1.07 },
+    atmosphere: { color: "#b85c3a", intensity: 0.32, scale: 1.045 },
     elevation: {
       dataset: "MOLA (Mars Orbiter Laser Altimeter)",
       source: "NASA / JPL / USGS",

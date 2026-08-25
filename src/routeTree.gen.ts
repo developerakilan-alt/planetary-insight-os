@@ -14,7 +14,9 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as ArRouteImport } from './routes/ar'
 import { Route as ColonyRouteImport } from './routes/colony'
 import { Route as CommandRouteImport } from './routes/command'
+import { Route as CompareRouteImport } from './routes/compare'
 import { Route as CopilotRouteImport } from './routes/copilot'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as ExoplanetsRouteImport } from './routes/exoplanets'
 import { Route as ExplorerRouteImport } from './routes/explorer'
@@ -58,9 +60,19 @@ const CommandRoute = CommandRouteImport.update({
   path: '/command',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompareRoute = CompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CopilotRoute = CopilotRouteImport.update({
   id: '/copilot',
   path: '/copilot',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EventsRoute = EventsRouteImport.update({
@@ -155,7 +167,9 @@ export interface FileRoutesByFullPath {
   '/ar': typeof ArRoute
   '/colony': typeof ColonyRoute
   '/command': typeof CommandRoute
+  '/compare': typeof CompareRoute
   '/copilot': typeof CopilotRoute
+  '/dashboard': typeof DashboardRoute
   '/events': typeof EventsRoute
   '/exoplanets': typeof ExoplanetsRoute
   '/explorer': typeof ExplorerRouteWithChildren
@@ -180,7 +194,9 @@ export interface FileRoutesByTo {
   '/ar': typeof ArRoute
   '/colony': typeof ColonyRoute
   '/command': typeof CommandRoute
+  '/compare': typeof CompareRoute
   '/copilot': typeof CopilotRoute
+  '/dashboard': typeof DashboardRoute
   '/events': typeof EventsRoute
   '/exoplanets': typeof ExoplanetsRoute
   '/gallery': typeof GalleryRoute
@@ -205,7 +221,9 @@ export interface FileRoutesById {
   '/ar': typeof ArRoute
   '/colony': typeof ColonyRoute
   '/command': typeof CommandRoute
+  '/compare': typeof CompareRoute
   '/copilot': typeof CopilotRoute
+  '/dashboard': typeof DashboardRoute
   '/events': typeof EventsRoute
   '/exoplanets': typeof ExoplanetsRoute
   '/explorer': typeof ExplorerRouteWithChildren
@@ -232,7 +250,9 @@ export interface FileRouteTypes {
     | '/ar'
     | '/colony'
     | '/command'
+    | '/compare'
     | '/copilot'
+    | '/dashboard'
     | '/events'
     | '/exoplanets'
     | '/explorer'
@@ -257,7 +277,9 @@ export interface FileRouteTypes {
     | '/ar'
     | '/colony'
     | '/command'
+    | '/compare'
     | '/copilot'
+    | '/dashboard'
     | '/events'
     | '/exoplanets'
     | '/gallery'
@@ -281,7 +303,9 @@ export interface FileRouteTypes {
     | '/ar'
     | '/colony'
     | '/command'
+    | '/compare'
     | '/copilot'
+    | '/dashboard'
     | '/events'
     | '/exoplanets'
     | '/explorer'
@@ -307,7 +331,9 @@ export interface RootRouteChildren {
   ArRoute: typeof ArRoute
   ColonyRoute: typeof ColonyRoute
   CommandRoute: typeof CommandRoute
+  CompareRoute: typeof CompareRoute
   CopilotRoute: typeof CopilotRoute
+  DashboardRoute: typeof DashboardRoute
   EventsRoute: typeof EventsRoute
   ExoplanetsRoute: typeof ExoplanetsRoute
   ExplorerRoute: typeof ExplorerRouteWithChildren
@@ -362,11 +388,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CommandRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/compare': {
+      id: '/compare'
+      path: '/compare'
+      fullPath: '/compare'
+      preLoaderRoute: typeof CompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/copilot': {
       id: '/copilot'
       path: '/copilot'
       fullPath: '/copilot'
       preLoaderRoute: typeof CopilotRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/events': {
@@ -511,7 +551,9 @@ const rootRouteChildren: RootRouteChildren = {
   ArRoute: ArRoute,
   ColonyRoute: ColonyRoute,
   CommandRoute: CommandRoute,
+  CompareRoute: CompareRoute,
   CopilotRoute: CopilotRoute,
+  DashboardRoute: DashboardRoute,
   EventsRoute: EventsRoute,
   ExoplanetsRoute: ExoplanetsRoute,
   ExplorerRoute: ExplorerRouteWithChildren,

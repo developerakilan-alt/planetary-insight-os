@@ -4,21 +4,11 @@ import { Suspense, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import type { Body, Landmark } from "@/data/bodies";
 import type { PlanetVisualConfig } from "@/data/planets/types";
-import type { Mission } from "@/data/missions";
 import { latLonToVec3, vec3ToLatLon } from "@/lib/geo";
 import { Starfield } from "./Starfield";
 import { MilkyWay } from "./SpaceEffects";
 import { TerrainPatch } from "./TerrainPatch";
 import { ScientificPlanet, type ScientificOptions } from "./ScientificPlanet";
-
-const MISSION_COLORS: Record<Mission["type"], string> = {
-  lander: "#F5C542",
-  orbiter: "#4FD1FF",
-  flyby: "#9B8CFF",
-  rover: "#F5C542",
-  crewed: "#6EE7B7",
-  observatory: "#C084FC",
-};
 
 function Marker({
   position,
@@ -55,14 +45,6 @@ export interface ScientificGlobeProps {
   body: Body;
   options: ScientificOptions & { lighting?: "sun" | "studio" | "terminator" };
   landmarks?: Landmark[];
-  missions?: Mission[];
-  /** surface traverse polylines (e.g. real rover paths) rendered on the globe */
-  traverses?: {
-    id: string;
-    label: string;
-    color: string;
-    points: { lat: number; lon: number }[];
-  }[];
   pick?: { lat: number; lon: number } | null;
   onPick?: (lat: number, lon: number) => void;
   focus?: { lat: number; lon: number } | null;
@@ -79,8 +61,6 @@ export default function ScientificGlobe({
   body,
   options,
   landmarks = [],
-  missions = [],
-  traverses = [],
   pick,
   onPick,
   focus,
@@ -106,21 +86,26 @@ export default function ScientificGlobe({
     <Canvas
       dpr={[1, Math.min(maxDpr, 1.8)]}
       camera={{ position: [0, 0.6, 3.2], fov: 40 }}
-      gl={{ antialias: true, alpha: true }}
+      gl={{ antialias: true, alpha: true, toneMapping: THREE.NeutralToneMapping }}
       style={{ position: "absolute", inset: 0 }}
     >
       <Suspense fallback={null}>
         <MilkyWay />
         <Starfield count={1400} radius={60} />
-        {lighting === "studio" ? (
-          <ambientLight intensity={0.95} />
-        ) : (
-          <ambientLight intensity={0.35} />
-        )}
+        {/* Lighting rig — tuned so the albedo texture reads with its true NASA
+            colours: a restrained ambient base keeps the night limb from going
+            fully black while the key "sun" carries contrast and shading. */}
+        <ambientLight
+          intensity={lighting === "studio" ? 1.05 : lighting === "terminator" ? 0.5 : 0.38}
+        />
         <directionalLight
           position={lighting === "terminator" ? [0.15, -0.2, 1.6] : [5, 3, 8]}
-          intensity={lighting === "studio" ? 0.6 : 1.7}
+          intensity={lighting === "studio" ? 0.7 : lighting === "terminator" ? 1.6 : 2.4}
         />
+        {lighting !== "studio" && (
+          <directionalLight position={[-6, -2, -4]} intensity={0.28} color="#dfe7f0" />
+        )}
+        <hemisphereLight args={["#a8bdd8", "#141018", 0.22]} />
         <group
           onClick={(e: ThreeEvent<MouseEvent>) => {
             if (!onPick) return;
@@ -183,16 +168,6 @@ export default function ScientificGlobe({
                 color="#4FD1FF"
               />
             ))}
-            {missions
-              .filter((m) => m.site)
-              .map((m) => (
-                <Marker
-                  key={m.id}
-                  position={latLonToVec3(m.site!.lat, m.site!.lon, 1.02)}
-                  label={`${m.name} · ${m.year}`}
-                  color={MISSION_COLORS[m.type] ?? "#4FD1FF"}
-                />
-              ))}
             {pick && (
               <Marker
                 position={latLonToVec3(pick.lat, pick.lon, 1.02)}
@@ -200,9 +175,6 @@ export default function ScientificGlobe({
                 color="#F5C542"
               />
             )}
-            {traverses.map((t) => (
-              <Traverse key={t.id} label={t.label} color={t.color} points={t.points} />
-            ))}
             <TerrainPatch
               config={config}
               center={pick ?? null}
@@ -221,44 +193,6 @@ export default function ScientificGlobe({
         <FocusTarget focus={focus ?? null} />
       </Suspense>
     </Canvas>
-  );
-}
-
-function Traverse({
-  label,
-  color,
-  points,
-}: {
-  label: string;
-  color: string;
-  points: { lat: number; lon: number }[];
-}) {
-  const line = useMemo(() => {
-    const pts = points.map((p) => latLonToVec3(p.lat, p.lon, 1.008));
-    return new THREE.Line(
-      new THREE.BufferGeometry().setFromPoints(pts),
-      new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.95 }),
-    );
-  }, [points, color]);
-
-  return (
-    <group>
-      <primitive object={line} />
-      {points.map((p, i) => (
-        <mesh key={i} position={latLonToVec3(p.lat, p.lon, 1.008)}>
-          <sphereGeometry args={[0.007, 8, 8]} />
-          <meshBasicMaterial color={i === 0 ? "#7EF9C6" : color} />
-        </mesh>
-      ))}
-      <Html position={latLonToVec3(points[0]!.lat, points[0]!.lon, 1.03)} distanceFactor={5} center>
-        <div
-          className="label-tele whitespace-nowrap rounded-md border border-border bg-background/80 px-2 py-1 text-[9px] text-foreground backdrop-blur"
-          style={{ pointerEvents: "none" }}
-        >
-          {label}
-        </div>
-      </Html>
-    </group>
   );
 }
 

@@ -24,7 +24,7 @@ export interface ScientificOptions {
 const TIER: Record<Quality, TextureTier> = {
   low: "L",
   medium: "M",
-  high: "M",
+  high: "H",
   ultra: "H",
   auto: "M",
 };

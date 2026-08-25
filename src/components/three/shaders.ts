@@ -126,7 +126,7 @@ void main(){
   float wrap = clamp((ndl + 0.35) / 1.35, 0.0, 1.0);
   float diff = mix(lambert, wrap, 0.35);
 
-  float ambient = uLightMode > 1.5 ? 0.10 : (uLightMode > 0.5 ? 0.42 : 0.06);
+  float ambient = uLightMode > 1.5 ? 0.22 : (uLightMode > 0.5 ? 0.5 : 0.24);
   float gain = uLightMode > 1.5 ? 1.35 : 1.0;
   vec3 lit = col * (ambient + diff * 1.25 * gain);
 

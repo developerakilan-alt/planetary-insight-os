@@ -73,6 +73,11 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
         <p className="mt-2 text-sm text-muted-foreground">
           Something went wrong on our end. You can try refreshing or head back home.
         </p>
+        {error?.message && (
+          <pre className="mt-4 max-h-44 overflow-auto whitespace-pre-wrap break-words rounded-lg border border-red-500/30 bg-red-500/5 p-3 text-left text-xs text-red-300">
+            {error.message}
+          </pre>
+        )}
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {
@@ -162,7 +167,7 @@ function RootShell({ children }: { children: ReactNode }) {
             any app code, unregisters workers and wipes caches once. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{if(localStorage.getItem("cosmos-sw-reset")==="v2")return;if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(function(rs){for(var i=0;i<rs.length;i++)rs[i].unregister()})}if(window.caches){caches.keys().then(function(ks){for(var j=0;j<ks.length;j++)caches.delete(ks[j])})}localStorage.setItem("cosmos-sw-reset","v2")}catch(e){}})();`,
+            __html: `(function(){try{if(localStorage.getItem("cosmos-sw-reset")==="v3")return;if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(function(rs){for(var i=0;i<rs.length;i++)rs[i].unregister()})}if(window.caches){caches.keys().then(function(ks){for(var j=0;j<ks.length;j++)caches.delete(ks[j])})}localStorage.setItem("cosmos-sw-reset","v3")}catch(e){}})();`,
           }}
         />
       </head>
